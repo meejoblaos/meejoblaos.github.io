@@ -116,6 +116,7 @@
     "Questions? Message us on Facebook or email.":
       "ມີຄຳຖາມ? ສົ່ງຂໍ້ຄວາມຫາພວກເຮົາທາງ Facebook ຫຼື ອີເມວ.",
     "Facebook Page": "ເພຈເຟສບຸກ",
+    "MEE-JOB Facebook Page": "MEE-JOB · ເພຈເຟສບຸກ",
 
     /* --- auth ------------------------------------------------------------- */
     "Create Your Account": "ສ້າງບັນຊີຂອງທ່ານ",
