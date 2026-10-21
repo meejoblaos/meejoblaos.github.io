@@ -1772,8 +1772,20 @@ footer {
   color: #fff;
 }
 
-.footer-contact-email {
+a.footer-contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-contact-email span {
   word-break: break-all;
+}
+
+.footer-contact-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
 }
 
 .footer-col a.footer-contact-social {

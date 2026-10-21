@@ -113,10 +113,8 @@
       "ສ້າງດ້ວຍ HTML, CSS, JavaScript ແລະ Supabase.",
     "Questions? Email us.":
       "ມີຄຳຖາມ? ສົ່ງອີເມວຫາພວກເຮົາ.",
-    "Questions? Message us on Facebook or email.":
-      "ມີຄຳຖາມ? ສົ່ງຂໍ້ຄວາມຫາພວກເຮົາທາງ Facebook ຫຼື ອີເມວ.",
-    "Facebook Page": "ເພຈເຟສບຸກ",
-    "MEE-JOB Facebook Page": "MEE-JOB · ເພຈເຟສບຸກ",
+    "Questions? Email us or send a message.":
+      "ມີຄຳຖາມ? ສົ່ງອີເມວ ຫຼື ຂໍ້ຄວາມຫາພວກເຮົາ.",
 
     /* --- auth ------------------------------------------------------------- */
     "Create Your Account": "ສ້າງບັນຊີຂອງທ່ານ",
