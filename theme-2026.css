@@ -187,6 +187,12 @@ nav .btn-secondary:hover {
   color: #fff;
 }
 
+.mobile-menu .lang-toggle {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
 /* ==========================================================================
    Buttons and small interactive pieces
    ========================================================================== */
