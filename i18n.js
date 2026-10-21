@@ -113,6 +113,9 @@
       "ສ້າງດ້ວຍ HTML, CSS, JavaScript ແລະ Supabase.",
     "Questions? Email us.":
       "ມີຄຳຖາມ? ສົ່ງອີເມວຫາພວກເຮົາ.",
+    "Questions? Message us on Facebook or email.":
+      "ມີຄຳຖາມ? ສົ່ງຂໍ້ຄວາມຫາພວກເຮົາທາງ Facebook ຫຼື ອີເມວ.",
+    "Facebook Page": "ເພຈເຟສບຸກ",
 
     /* --- auth ------------------------------------------------------------- */
     "Create Your Account": "ສ້າງບັນຊີຂອງທ່ານ",
