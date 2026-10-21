@@ -1,0 +1,15 @@
+# Never commit credentials, local environment files or private keys.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.*
+*.secret
+.supabase/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

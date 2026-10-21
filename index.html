@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    try {
+      var savedLang =
+        localStorage.getItem("meejob_lang") ||
+        localStorage.getItem("buildmate_lang");
+      if (savedLang === "en") {
+        document.documentElement.lang = "en";
+      }
+    } catch (error) {}
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEEJOB — Find Work. Build Your Future.</title>
+  <meta name="description" content="MEEJOB — ວຽກ, ໂຄງການຟຣີແລນຊ໌ ແລະ ໂປຣໄຟລ໌ເຮັດວຽກ ສຳລັບນັກສຶກສາ, ຟຣີແລນຊ໌, ທຸລະກິດຂະໜາດນ້ອຍ ແລະ ບໍລິສັດທົ່ວລາວ. ຊອກວຽກ ແລະ ຮັບງານຟຣີແລນຊ໌ໄດ້ເລີຍ.">
+  <meta name="theme-color" content="#eb4f69">
+  <meta name="author" content="MEEJOB">
+  <link rel="canonical" href="https://meejoblaos.github.io/">
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="MEEJOB">
+  <meta property="og:title" content="MEEJOB — Find Work. Build Your Future.">
+  <meta property="og:description" content="ວຽກ, ໂຄງການຟຣີແລນຊ໌ ແລະ ໂປຣໄຟລ໌ເຮັດວຽກ ສຳລັບນັກສຶກສາ, ຟຣີແລນຊ໌, ທຸລະກິດຂະໜາດນ້ອຍ ແລະ ບໍລິສັດທົ່ວລາວ.">
+  <meta property="og:url" content="https://meejoblaos.github.io/">
+  <meta property="og:locale" content="lo_LA">
+  <meta property="og:image" content="https://meejoblaos.github.io/meejob-logo.png">
+  <meta property="og:image:width" content="620">
+  <meta property="og:image:height" content="160">
+  <meta property="og:image:alt" content="MEEJOB — Dok Champa pin logo">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="MEEJOB — Find Work. Build Your Future.">
+  <meta name="twitter:description" content="ວຽກ, ໂຄງການຟຣີແລນຊ໌ ແລະ ໂປຣໄຟລ໌ເຮັດວຽກ ສຳລັບນັກສຶກສາ, ຟຣີແລນຊ໌, ທຸລະກິດຂະໜາດນ້ອຍ ແລະ ບໍລິສັດທົ່ວລາວ.">
+  <meta name="twitter:image" content="https://meejoblaos.github.io/meejob-logo.png">
+
+  <link rel="icon" href="meejob-icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Lao+Looped:wght@400;500;600;700&family=Noto+Serif+Lao:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- NAVBAR -->
+  <nav aria-label="Main navigation">
+    <a href="#top" class="logo" aria-label="MEEJOB">
+      <img src="meejob-icon.svg" alt="" class="logo-mark" width="28" height="36">
+      <span class="logo-word">MEE<span class="logo-accent">JOB</span></span>
+    </a>
+
+    <div class="nav-links">
+      <a href="#jobs">Find Jobs</a>
+      <a href="#projects">Freelance Projects</a>
+      <a href="#talent">Talent</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#about">About</a>
+    </div>
+
+    <div class="nav-buttons">
+      <button
+        type="button"
+        class="lang-toggle"
+        data-lang-toggle
+        onclick="toggleLanguage()"
+        aria-label="Switch language"
+      >
+        EN
+      </button>
+
+      <!-- LOGGED OUT -->
+      <div id="loggedOutMenu">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="openAuth('login')"
+        >
+          Log In
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="openAuth('signup')"
+        >
+          Get Started
+        </button>
+      </div>
+
+      <!-- LOGGED IN -->
+      <div id="loggedInMenu">
+        <span id="navUserName"></span>
+
+        <button
+          type="button"
+          id="dashboardButton"
+          class="btn btn-secondary"
+          onclick="openDashboard()"
+        >
+          My Projects
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-secondary messages-nav-btn"
+          onclick="openMessages()"
+        >
+          💬 Messages
+          <span
+            id="messageUnreadBadge"
+            class="unread-badge"
+            style="display:none;"
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          type="button"
+          id="navProfileButton"
+          class="btn btn-secondary"
+          onclick="openProfile()"
+        >
+          Profile
+        </button>
+      </div>
+
+      <button
+        type="button"
+        id="mobileMenuButton"
+        class="mobile-menu-btn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobileMenu"
+        onclick="toggleMobileMenu()"
+      >
+        ☰
+      </button>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" class="mobile-menu">
+    <a href="#jobs" onclick="toggleMobileMenu()">Find Jobs</a>
+    <a href="#projects" onclick="toggleMobileMenu()">Freelance Projects</a>
+    <a href="#talent" onclick="toggleMobileMenu()">Talent</a>
+    <a href="#how-it-works" onclick="toggleMobileMenu()">How It Works</a>
+    <a href="#about" onclick="toggleMobileMenu()">About</a>
+    <a href="#top" onclick="toggleMobileMenu()">Back to top</a>
+    <button
+      type="button"
+      class="lang-toggle mobile-lang-toggle"
+      data-lang-toggle
+      onclick="toggleLanguage()"
+      aria-label="Switch language"
+    >
+      EN
+    </button>
+    <div id="mobileMenuAccount" class="mobile-menu-account"></div>
+  </div>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <span class="hero-orb hero-orb-a" aria-hidden="true"></span>
+      <span class="hero-orb hero-orb-b" aria-hidden="true"></span>
+      <span class="eyebrow">MEEJOB · Lao job marketplace</span>
+      <h1>
+        Find Work.
+        <span class="accent">Build Your Future.</span>
+      </h1>
+      <p>
+        Jobs, freelance projects and talent profiles — for students,
+        freelancers, small businesses and companies across Laos.
+      </p>
+
+      <form class="hero-search" onsubmit="return searchFromHero(event)">
+        <label class="sr-only" for="heroSearchInput">Search jobs</label>
+        <input
+          type="search"
+          id="heroSearchInput"
+          placeholder="Search jobs, skills or companies..."
+          autocomplete="off"
+        >
+        <label class="sr-only" for="heroCategory">Job category</label>
+        <select id="heroCategory">
+          <option value="all">All work</option>
+          <option value="web-design">Web design</option>
+          <option value="app">App development</option>
+          <option value="project">Project work</option>
+          <option value="engineering">Engineering</option>
+          <option value="graphics">Graphic design</option>
+          <option value="content">Content &amp; writing</option>
+          <option value="marketing">Marketing</option>
+          <option value="other">Other</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+
+      <div class="hero-buttons">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="openAuth('signup')"
+        >
+          Get Started
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline"
+          onclick="scrollToProjects()"
+        >
+          Browse freelance projects
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong id="statJobs">—</strong>
+          <span>Jobs</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="statFreelancers">—</strong>
+          <span>Talent profiles</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="statProjects">—</strong>
+          <span>Freelance projects</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIND JOBS -->
+    <section id="jobs" class="jobs-section">
+      <div class="section-title">
+        <h2>Find Jobs</h2>
+        <p>Full-time, part-time and short-term jobs across Laos.</p>
+      </div>
+
+      <div class="jobs-controls">
+        <div class="search-box jobs-search">
+          <label class="sr-only" for="jobSearch">Search jobs</label>
+          <input
+            type="search"
+            id="jobSearch"
+            placeholder="Search jobs, company or location..."
+            autocomplete="off"
+            oninput="onJobSearch(this.value)"
+          >
+        </div>
+        <div
+          id="jobTypeFilters"
+          class="job-filters"
+          role="group"
+          aria-label="Filter jobs by type"
+        ></div>
+        <div
+          id="jobCategoryFilters"
+          class="job-filters"
+          role="group"
+          aria-label="Filter jobs by category"
+        ></div>
+      </div>
+
+      <div class="jobs-toolbar">
+        <span class="jobs-note" id="jobsNote"></span>
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          onclick="openJobModal()"
+        >
+          + Post a job
+        </button>
+      </div>
+
+      <div id="jobList" class="job-card-grid" aria-live="polite">
+        <div class="empty-message">Loading jobs...</div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="categories">
+      <div class="section-title">
+        <h2>Job categories</h2>
+        <p>Choose the kind of work you need — from web design to engineering.</p>
+      </div>
+
+      <div class="category-grid" id="categoryGrid">
+        <button type="button" class="category-card" data-category="web-design" onclick="chooseCategory('web-design')">
+          <span class="category-icon" aria-hidden="true">🎨</span>
+          <h3>Web design</h3>
+          <p>Websites, landing pages and online stores.</p>
+          <span class="category-count" data-count-for="web-design">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="app" onclick="chooseCategory('app')">
+          <span class="category-icon" aria-hidden="true">📱</span>
+          <h3>App development</h3>
+          <p>Mobile apps for iOS and Android.</p>
+          <span class="category-count" data-count-for="app">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="project" onclick="chooseCategory('project')">
+          <span class="category-icon" aria-hidden="true">📋</span>
+          <h3>Project work</h3>
+          <p>Planning, coordination and delivery.</p>
+          <span class="category-count" data-count-for="project">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="engineering" onclick="chooseCategory('engineering')">
+          <span class="category-icon" aria-hidden="true">⚙️</span>
+          <h3>Engineering</h3>
+          <p>Civil, mechanical and electrical work.</p>
+          <span class="category-count" data-count-for="engineering">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="graphics" onclick="chooseCategory('graphics')">
+          <span class="category-icon" aria-hidden="true">🖌️</span>
+          <h3>Graphic design</h3>
+          <p>Logos, branding and visual identity.</p>
+          <span class="category-count" data-count-for="graphics">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="content" onclick="chooseCategory('content')">
+          <span class="category-icon" aria-hidden="true">✍️</span>
+          <h3>Content &amp; writing</h3>
+          <p>Articles, scripts and social posts.</p>
+          <span class="category-count" data-count-for="content">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="marketing" onclick="chooseCategory('marketing')">
+          <span class="category-icon" aria-hidden="true">📈</span>
+          <h3>Marketing</h3>
+          <p>Social media, ads and SEO.</p>
+          <span class="category-count" data-count-for="marketing">0 open</span>
+        </button>
+
+        <button type="button" class="category-card" data-category="other" onclick="chooseCategory('other')">
+          <span class="category-icon" aria-hidden="true">✨</span>
+          <h3>Other</h3>
+          <p>Anything else you need done.</p>
+          <span class="category-count" data-count-for="other">0 open</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- FREELANCE PROJECTS -->
+    <section id="projects" class="projects-section">
+      <div class="section-title">
+        <h2>Freelance Projects</h2>
+        <p>Clients post projects; freelancers send a quote and deliver the work.</p>
+      </div>
+
+      <div class="project-controls">
+        <div class="search-box">
+          <label class="sr-only" for="projectSearch">Search projects</label>
+          <input
+            type="search"
+            id="projectSearch"
+            placeholder="Search projects..."
+            autocomplete="off"
+            oninput="onProjectSearch(this.value)"
+          >
+        </div>
+        <div
+          id="projectFilters"
+          class="job-filters"
+          role="group"
+          aria-label="Filter projects by category"
+        ></div>
+      </div>
+
+      <div id="projectsTop" class="projects-top">
+        <button
+          type="button"
+          id="postProjectButton"
+          class="btn btn-primary"
+          onclick="openProjectModal()"
+          style="display:none;"
+        >
+          + Post a Project
+        </button>
+      </div>
+
+      <div id="projectLoginNote" class="project-login-note">
+        Log in as a client to post a project.
+      </div>
+
+      <div id="projectList" class="project-grid" aria-live="polite">
+        <div class="empty-message">Loading projects...</div>
+      </div>
+    </section>
+
+    <!-- TALENT PROFILES -->
+    <section id="talent">
+      <div class="section-title">
+        <h2>Talent Profiles</h2>
+        <p>Skills, experience, portfolio and expected pay — find the right person.</p>
+      </div>
+
+      <div class="search-box">
+        <label class="sr-only" for="freelancerSearch">Search talent</label>
+        <input
+          type="search"
+          id="freelancerSearch"
+          placeholder="Search talent by name, skill or experience..."
+          autocomplete="off"
+        >
+      </div>
+
+      <div id="freelancerList" class="freelancer-grid" aria-live="polite">
+        <div class="empty-message">Loading talent profiles...</div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works">
+      <div class="section-title">
+        <h2>How It Works</h2>
+        <p>Three ways to move your career or your business forward.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature-card">
+          <span class="feature-icon" aria-hidden="true">👤</span>
+          <h3>1. Create Your Profile</h3>
+          <p>Add your skills, experience, portfolio, expected pay and contact details.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon" aria-hidden="true">🔎</span>
+          <h3>2. Find Jobs or Post Work</h3>
+          <p>Browse jobs and freelance projects, or post your own project as a client.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon" aria-hidden="true">🤝</span>
+          <h3>3. Connect and Deliver</h3>
+          <p>Message directly, agree on the work, and build your reputation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="section-title">
+        <h2>About MEEJOB</h2>
+      </div>
+      <div class="about-box">
+        <p>
+          MEEJOB is a job and freelance marketplace for Laos. Find full-time,
+          part-time and short-term jobs, post freelance projects, and show your
+          talent profile to clients — all in Lao and English.
+        </p>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="cta-inner">
+        <h2>Find Work. Build Your Future.</h2>
+        <p>Create your free MEEJOB account and start today.</p>
+        <button
+          type="button"
+          class="btn"
+          onclick="openAuth('signup')"
+        >
+          Get Started
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="#top" class="logo" aria-label="MEEJOB">
+          <img src="meejob-icon.svg" alt="" class="logo-mark" width="33" height="42">
+          <span class="logo-word">MEE<span class="logo-accent">JOB</span></span>
+        </a>
+        <p>
+          Find jobs, hire freelancers and build your future — in Lao and English.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <a href="#jobs">Find jobs</a>
+        <a href="#categories">Job categories</a>
+        <a href="#projects">Freelance projects</a>
+        <a href="#talent">Talent profiles</a>
+        <a href="#how-it-works">How it works</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="#" onclick="openAuth('login'); return false;">Log in</a>
+        <a href="#" onclick="openAuth('signup'); return false;">Create account</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a
+          class="footer-contact-email"
+          href="mailto:meejoblaos@gmail.com?subject=MEEJOB%20inquiry"
+        >meejoblaos@gmail.com</a>
+        <p class="footer-contact-note">Questions? Email us.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="footerYear">2026</span> MEEJOB. All rights reserved.</span>
+      <span>Built with HTML, CSS, JavaScript &amp; Supabase.</span>
+    </div>
+  </footer>
+
+  <!-- ======================================================================
+       AUTH MODAL
+  ======================================================================= -->
+  <div id="authModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('authModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="authTitle">Log In</h2>
+
+      <div id="signupNameGroup" class="form-group" style="display:none;">
+        <label for="authName">Name</label>
+        <input type="text" id="authName" placeholder="Your name" autocomplete="name" maxlength="80">
+      </div>
+
+      <div id="signupRoleGroup" class="form-group" style="display:none;">
+        <label for="authRole">I am a</label>
+        <select id="authRole">
+          <option value="client">Client — I want to hire</option>
+          <option value="freelancer">Freelancer — I want to work</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="authEmail">Email</label>
+        <input
+          type="email"
+          id="authEmail"
+          placeholder="you@example.com"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="authPassword">Password</label>
+        <input
+          type="password"
+          id="authPassword"
+          placeholder="Password"
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div id="forgotPasswordRow" class="forgot-row">
+        <button type="button" onclick="sendPasswordReset()">
+          Forgot password?
+        </button>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="authSubmitButton"
+          class="btn btn-primary"
+          onclick="submitAuth()"
+        >
+          Log In
+        </button>
+      </div>
+
+      <div id="authStatus" class="status-message" role="status" aria-live="polite"></div>
+
+      <div class="auth-switch">
+        <span id="authSwitchText">Don't have an account?</span>
+        <button type="button" onclick="switchAuthMode()">
+          <span id="authSwitchButton">Sign Up</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PASSWORD RECOVERY MODAL
+  ======================================================================= -->
+  <div id="recoveryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recoveryTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('recoveryModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="recoveryTitle">Set a New Password</h2>
+      <p class="text-muted small" style="margin-bottom:18px;">
+        Choose a new password for your MEEJOB account.
+      </p>
+
+      <div class="form-group">
+        <label for="recoveryPassword">New password</label>
+        <input
+          type="password"
+          id="recoveryPassword"
+          placeholder="At least 6 characters"
+          autocomplete="new-password"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="recoveryPasswordConfirm">Confirm password</label>
+        <input
+          type="password"
+          id="recoveryPasswordConfirm"
+          placeholder="Repeat your new password"
+          autocomplete="new-password"
+        >
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="recoverySubmitButton"
+          onclick="saveNewPassword()"
+        >
+          Save Password
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('recoveryModal')"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <div id="recoveryStatus" class="status-message" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PROFILE MODAL
+  ======================================================================= -->
+  <div id="profileModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('profileModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="profileTitle">Your Profile</h2>
+
+      <div class="form-group">
+        <label for="profileName">Name</label>
+        <input type="text" id="profileName" placeholder="Your name" maxlength="80" autocomplete="name">
+      </div>
+
+      <div class="form-group">
+        <label for="profileEmail">Email</label>
+        <input type="email" id="profileEmail" disabled>
+      </div>
+
+      <div class="form-group">
+        <label for="profileRole">Role</label>
+        <select id="profileRole">
+          <option value="client">Client</option>
+          <option value="freelancer">Freelancer</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="profileBio">Bio</label>
+        <textarea id="profileBio" placeholder="Tell people about yourself..." maxlength="1200"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="profileSkills">Skills</label>
+        <input
+          type="text"
+          id="profileSkills"
+          placeholder="e.g. Web Design, JavaScript, Photoshop"
+          maxlength="300"
+        >
+        <div class="form-hint">Separate skills with commas.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="profileRate">Expected pay</label>
+        <input
+          type="text"
+          id="profileRate"
+          placeholder="e.g. 5,000,000 LAK / month or $15 / hour"
+          maxlength="80"
+        >
+        <div class="form-hint">Shown on your talent profile. Leave empty to hide.</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="profilePhone">Phone / WhatsApp</label>
+          <input
+            type="tel"
+            id="profilePhone"
+            placeholder="e.g. 020 5555 1234"
+            autocomplete="tel"
+            inputmode="tel"
+            maxlength="30"
+          >
+        </div>
+        <div class="form-group">
+          <label for="profileFacebook">Facebook</label>
+          <input
+            type="text"
+            id="profileFacebook"
+            placeholder="facebook.com/yourname"
+            maxlength="200"
+          >
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="profilePortfolio">Portfolio or CV link</label>
+        <input
+          type="url"
+          id="profilePortfolio"
+          placeholder="https://..."
+          maxlength="500"
+        >
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" onclick="saveProfile()">
+          Save Profile
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('profileModal')"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <div id="profileStatus" class="status-message" role="status" aria-live="polite"></div>
+
+      <div class="profile-logout">
+        <button type="button" class="btn btn-danger" onclick="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PROJECT CREATE / EDIT MODAL
+  ======================================================================= -->
+  <div id="projectModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('projectModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="projectModalTitle">Post a Project</h2>
+
+      <div class="form-group">
+        <label for="projectTitle">Project Title</label>
+        <input
+          type="text"
+          id="projectTitle"
+          placeholder="e.g. Build a modern website"
+          maxlength="140"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="projectDescription">Project Description</label>
+        <textarea
+          id="projectDescription"
+          placeholder="Describe what you need..."
+          maxlength="4000"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="projectBudget">Budget (USD)</label>
+        <input
+          type="number"
+          id="projectBudget"
+          placeholder="e.g. 500"
+          min="0"
+          step="1"
+        >
+      </div>
+
+      <div id="projectStatus" class="status-message" role="status" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="saveProjectButton"
+          class="btn btn-primary"
+          onclick="createProject()"
+        >
+          Post Project
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeProjectModal()"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       JOB POST MODAL
+  ======================================================================= -->
+  <div id="jobModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('jobModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="jobModalTitle">Post a Job</h2>
+      <p class="small text-muted job-review-note">
+        Every job is reviewed before it appears publicly. Please avoid rude or abusive language.
+      </p>
+
+      <div class="form-group">
+        <label for="jobTitle">Job title</label>
+        <input
+          type="text"
+          id="jobTitle"
+          placeholder="e.g. Web Developer"
+          maxlength="140"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="jobCompany">Company</label>
+        <input
+          type="text"
+          id="jobCompany"
+          placeholder="e.g. Digital Lao Co., Ltd."
+          maxlength="140"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="jobLocation">Location</label>
+        <input
+          type="text"
+          id="jobLocation"
+          placeholder="e.g. Vientiane"
+          maxlength="140"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="jobType">Job type</label>
+        <select id="jobType">
+          <option value="full_time">Full-time</option>
+          <option value="part_time">Part-time</option>
+          <option value="short_term">Short-term</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="jobCategory">Job category</label>
+        <select id="jobCategory">
+          <option value="web-design">Web design</option>
+          <option value="app">App development</option>
+          <option value="project">Project work</option>
+          <option value="engineering">Engineering</option>
+          <option value="graphics">Graphic design</option>
+          <option value="content">Content &amp; writing</option>
+          <option value="marketing">Marketing</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="jobSalary">Salary</label>
+        <input
+          type="text"
+          id="jobSalary"
+          placeholder="e.g. 8,000,000 – 12,000,000 LAK"
+          maxlength="80"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="jobContact">Contact email or phone</label>
+        <input
+          type="text"
+          id="jobContact"
+          placeholder="e.g. hr@company.com or 020 5555 1234"
+          maxlength="140"
+        >
+        <p class="small text-muted job-contact-note">
+          This contact is shown publicly with the approved job. Use a business
+          email or phone if possible.
+        </p>
+      </div>
+
+      <div class="form-group">
+        <label for="jobDescription">Job description</label>
+        <textarea
+          id="jobDescription"
+          placeholder="Describe the role, duties and requirements..."
+          maxlength="3000"
+        ></textarea>
+      </div>
+
+      <div id="jobFormStatus" class="status-message" role="status" aria-live="polite"></div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="saveJobButton"
+          class="btn btn-primary"
+          onclick="createJob()"
+        >
+          Submit for approval
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('jobModal')"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       JOB POSTER STUDIO
+  ======================================================================= -->
+  <div id="posterModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="posterTitle">
+    <div class="modal-content poster-modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('posterModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="posterTitle">Job poster studio</h2>
+      <p class="small text-muted poster-help">
+        Turn your job details into a ready-to-share poster and caption. The design is generated locally in your browser.
+      </p>
+
+      <div class="poster-layout">
+        <div class="poster-preview">
+          <canvas id="posterCanvas" width="1080" height="1350" aria-label="Job poster preview"></canvas>
+        </div>
+
+        <div class="poster-controls">
+          <div class="poster-grid">
+            <div class="form-group">
+              <label for="posterTemplate">Template</label>
+              <select id="posterTemplate" onchange="renderPoster()">
+                <option value="modern">Modern</option>
+                <option value="bold">Bold</option>
+                <option value="minimal">Minimal</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="posterLanguage">Poster language</label>
+              <select id="posterLanguage" onchange="posterLanguageChanged()">
+                <option value="lo">ລາວ</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="posterHeadline">Headline</label>
+            <input id="posterHeadline" type="text" maxlength="90" oninput="generatePosterCaption(); renderPoster();">
+          </div>
+
+          <div class="form-group">
+            <label for="posterSubline">Company / location</label>
+            <input id="posterSubline" type="text" maxlength="100" oninput="renderPoster();">
+          </div>
+
+          <div class="form-group">
+            <label for="posterDetails">Details</label>
+            <textarea id="posterDetails" rows="4" maxlength="500" oninput="renderPoster();"></textarea>
+          </div>
+
+          <div class="poster-grid">
+            <div class="form-group">
+              <label for="posterAccent">Accent colour</label>
+              <input id="posterAccent" type="color" value="#eb4f69" oninput="renderPoster()">
+            </div>
+
+            <div class="form-group">
+              <label for="posterPhoto">Logo or photo (optional)</label>
+              <input id="posterPhoto" type="file" accept="image/png,image/jpeg,image/webp" onchange="loadPosterPhoto(event)">
+              <button type="button" class="poster-clear-photo" onclick="clearPosterPhoto()">
+                Remove photo
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="posterCaption">Post caption</label>
+            <textarea id="posterCaption" rows="6"></textarea>
+          </div>
+
+          <div class="poster-actions">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="autoDesignPoster()">
+              Auto design
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="generatePosterCaption()">
+              Refresh caption
+            </button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="downloadPoster()">
+              Download PNG
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="sharePoster()">
+              Share
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="copyPosterCaption()">
+              Copy caption
+            </button>
+          </div>
+
+          <p id="posterStatus" class="status-message" role="status" aria-live="polite"></p>
+          <p class="small text-muted poster-help">
+            Tip: true AI image generation needs an API key and a small server. This studio creates the design locally, so your job details never leave this browser.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PROJECT DETAIL MODAL
+  ======================================================================= -->
+  <div id="projectDetailModal" class="modal" role="dialog" aria-modal="true" aria-label="Project details">
+    <div class="modal-content large">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('projectDetailModal')"
+      >
+        ×
+      </button>
+
+      <div id="projectDetailContent">
+        <div class="empty-message">Loading project...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       DASHBOARD MODAL
+  ======================================================================= -->
+  <div id="dashboardModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="dashboardTitle">
+    <div class="modal-content large">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('dashboardModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="dashboardTitle">My Projects</h2>
+
+      <div class="dashboard-toolbar">
+        <div class="tabs" id="dashboardTabs">
+          <button type="button" class="tab active" data-dashboard-tab="projects" onclick="switchDashboardTab('projects')">
+            Posted projects
+          </button>
+          <button type="button" class="tab" data-dashboard-tab="applications" onclick="switchDashboardTab('applications')">
+            My applications
+          </button>
+          <button type="button" class="tab" data-dashboard-tab="jobs" style="display:none;" onclick="switchDashboardTab('jobs')">
+            My jobs
+          </button>
+          <button type="button" class="tab" id="dashboardApprovalsTab" data-dashboard-tab="approvals" style="display:none;" onclick="switchDashboardTab('approvals')">
+            Job approvals
+          </button>
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          id="dashboardNewProjectButton"
+          onclick="openProjectModal()"
+        >
+          + New project
+        </button>
+      </div>
+
+      <div id="dashboardContent" aria-live="polite">
+        <div class="empty-message">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       APPLICANTS MODAL
+  ======================================================================= -->
+  <div id="applicantsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="applicantsTitle">
+    <div class="modal-content large">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('applicantsModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="applicantsTitle">Applicants</h2>
+      <div id="applicantsSubtitle" class="text-muted small" data-no-i18n style="margin-top:-14px;margin-bottom:20px;"></div>
+
+      <div id="applicantsContent" aria-live="polite">
+        <div class="empty-message">Loading applicants...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       FREELANCER DETAIL MODAL
+  ======================================================================= -->
+  <div id="detailModal" class="modal" role="dialog" aria-modal="true" aria-label="Freelancer profile">
+    <div class="modal-content large">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('detailModal')"
+      >
+        ×
+      </button>
+
+      <div id="freelancerDetail"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MESSAGES LIST MODAL
+  ======================================================================= -->
+  <div id="messagesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="messagesTitle">
+    <div class="modal-content">
+      <div class="messages-header">
+        <h2 id="messagesTitle">Messages</h2>
+        <button
+          type="button"
+          class="close-btn"
+          aria-label="Close"
+          onclick="closeModal('messagesModal')"
+        >
+          ×
+        </button>
+      </div>
+
+      <div id="conversationList" class="messages-list" aria-live="polite">
+        <div class="messages-loading">Loading conversations...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       CHAT MODAL
+  ======================================================================= -->
+  <div id="chatModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="chatUserName">
+    <div class="modal-content">
+      <div class="chat-header">
+        <div class="chat-header-info">
+          <h2 id="chatUserName">Chat</h2>
+          <p id="chatUserRole">MEEJOB Messages</p>
+        </div>
+        <button
+          type="button"
+          class="close-btn"
+          aria-label="Close chat"
+          onclick="closeChat()"
+        >
+          ×
+        </button>
+      </div>
+
+      <div id="chatMessages" aria-live="polite">
+        <div class="chat-empty">Loading messages...</div>
+      </div>
+
+      <div class="chat-input-area">
+        <label class="sr-only" for="chatInput">Message</label>
+        <textarea
+          id="chatInput"
+          placeholder="Type your message..."
+          rows="1"
+          maxlength="2000"
+        ></textarea>
+        <button type="button" id="sendMessageBtn" onclick="sendMessage()">
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       JOB DETAIL MODAL
+  ======================================================================= -->
+  <div id="jobDetailModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="jobDetailTitle">
+    <div class="modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('jobDetailModal')"
+      >
+        ×
+      </button>
+      <div id="jobDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       PREVIEW GATE — shown to visitors who have not signed up yet
+  ======================================================================= -->
+  <div id="previewModal" class="modal preview-gate" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-content preview-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="dismissPreviewGate()"
+      >
+        ×
+      </button>
+
+      <span class="eyebrow">Members only</span>
+      <h2 id="previewTitle">See what's inside MEEJOB</h2>
+      <p class="preview-sub">
+        Create a free account to view full profiles, message talent and apply.
+      </p>
+
+      <div class="preview-window">
+        <div class="preview-bar">
+          <span></span><span></span><span></span>
+          <em>meejob.la</em>
+        </div>
+        <div class="preview-body">
+          <div class="preview-nav">
+            <b>MEEJOB</b>
+            <i></i><i></i><i></i>
+          </div>
+          <div class="preview-hero">
+            <strong>Find Work.</strong>
+            <small>Build Your Future.</small>
+            <span class="preview-cta">Get Started</span>
+          </div>
+          <div class="preview-cards">
+            <div class="preview-card">
+              <span class="preview-dot"></span>
+              <b></b><i></i>
+            </div>
+            <div class="preview-card">
+              <span class="preview-dot"></span>
+              <b></b><i></i>
+            </div>
+            <div class="preview-card">
+              <span class="preview-dot"></span>
+              <b></b><i></i>
+            </div>
+          </div>
+        </div>
+        <div class="preview-lock" aria-hidden="true">🔒</div>
+      </div>
+
+      <div class="preview-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="closeModal('previewModal'); openAuth('signup')"
+        >
+          Sign up free
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('previewModal'); openAuth('login')"
+        >
+          Log In
+        </button>
+      </div>
+      <button type="button" class="preview-skip" onclick="dismissPreviewGate()">
+        Explore first
+      </button>
+    </div>
+  </div>
+
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="jobs-seed.js"></script>
+  <script src="i18n.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
