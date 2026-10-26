@@ -85,6 +85,7 @@ let currentUser = null;
             : null;
         if (currentUser) {
           await loadCurrentProfile();
+          await applyPendingSignupProfile();
           await loadAdminStatus();
           await updateUnreadCount();
           await startMessageNotifications();
@@ -125,6 +126,7 @@ let currentUser = null;
             : null;
         if (currentUser) {
           await loadCurrentProfile();
+          await applyPendingSignupProfile();
           await loadAdminStatus();
           updateNavigation();
           await updateUnreadCount();
@@ -163,10 +165,23 @@ let currentUser = null;
         document.getElementById(
           "postProjectButton"
         );
+      const postJobButton =
+        document.getElementById(
+          "postJobButton"
+        );
       const projectLoginNote =
         document.getElementById(
           "projectLoginNote"
         );
+      const isClient =
+        currentProfile &&
+        currentProfile.role === "client";
+      if (postJobButton) {
+        postJobButton.style.display =
+          !currentUser || currentIsAdmin || isClient
+            ? ""
+            : "none";
+      }
       if (currentUser) {
         loggedOutMenu.style.display =
           "none";
@@ -188,10 +203,7 @@ let currentUser = null;
               ? "My Applications"
               : "My Projects";
         }
-        if (
-          currentProfile &&
-          currentProfile.role === "client"
-        ) {
+        if (isClient) {
           if (postProjectButton) {
             postProjectButton.style.display =
               "inline-block";
@@ -434,12 +446,61 @@ let currentUser = null;
             throw error;
           }
           if (data.user) {
-            status.style.color =
-              "#16a34a";
-            status.textContent =
-              data.session
-                ? "Account created. You are logged in."
-                : "Account created. Check your email to confirm your address, then log in.";
+            if (data.session) {
+              currentUser = data.user;
+              const profileApplied = await applySignupProfile(
+                data.user,
+                name,
+                role
+              );
+              try {
+                window.localStorage.removeItem(PENDING_SIGNUP_KEY);
+              } catch (storageError) {
+                /* storage may be unavailable */
+              }
+              await loadCurrentProfile();
+              updateNavigation();
+              await updateUnreadCount();
+              await startMessageNotifications();
+              await loadFreelancers();
+              await loadProjects();
+              if (profileApplied) {
+                status.style.color =
+                  "#16a34a";
+                status.textContent =
+                  "Account created. You are logged in.";
+                setTimeout(
+                  function () {
+                    closeModal(
+                      "authModal"
+                    );
+                  },
+                  700
+                );
+              } else {
+                status.style.color =
+                  "#b45309";
+                status.textContent =
+                  "Account created. Open Profile, choose your account type and save it once.";
+              }
+            } else {
+              try {
+                window.localStorage.setItem(
+                  PENDING_SIGNUP_KEY,
+                  JSON.stringify({
+                    email: email,
+                    name: name,
+                    role: normalizeRole(role)
+                  })
+                );
+              } catch (storageError) {
+                /* storage may be unavailable */
+              }
+              status.style.color =
+                "#16a34a";
+              status.textContent =
+                "Account created. Check your email to confirm your address, then log in.";
+            }
           }
         } else {
           const {
@@ -456,6 +517,7 @@ let currentUser = null;
           currentUser =
             data.user;
           await loadCurrentProfile();
+          await applyPendingSignupProfile();
           updateNavigation();
           await updateUnreadCount();
           await startMessageNotifications();
@@ -534,6 +596,20 @@ let currentUser = null;
       return /column|does not exist|could not find|schema cache|PGRST20[45]|42P01|42703/i.test(
         message
       );
+    }
+    function requireChangedRow(result, message) {
+      if (result && result.error) {
+        throw result.error;
+      }
+      const data = result ? result.data : null;
+      if (!data || (Array.isArray(data) && !data.length)) {
+        const error = new Error(
+          message || "Could not save changes."
+        );
+        error.code = "NO_ROWS";
+        throw error;
+      }
+      return data;
     }
     async function fetchPublicProfile(id) {
       let result = await supabaseClient
@@ -658,6 +734,72 @@ let currentUser = null;
         console.error(error);
       }
     }
+    const PENDING_SIGNUP_KEY = "meejob_pending_signup";
+    function normalizeRole(role) {
+      return String(role || "").trim().toLowerCase() === "client"
+        ? "client"
+        : "freelancer";
+    }
+    async function applySignupProfile(user, name, role) {
+      if (!user) {
+        return false;
+      }
+      const result = await supabaseClient
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          name: String(name || "").trim(),
+          role: normalizeRole(role)
+        });
+      if (result.error) {
+        console.error("Could not apply the chosen signup role:", result.error);
+        return false;
+      }
+      return true;
+    }
+    async function applyPendingSignupProfile() {
+      if (!currentUser || !currentProfile) {
+        return;
+      }
+      let pending = null;
+      try {
+        pending = JSON.parse(
+          window.localStorage.getItem(PENDING_SIGNUP_KEY) || "null"
+        );
+      } catch (error) {
+        pending = null;
+      }
+      if (!pending) {
+        return;
+      }
+      const pendingEmail = String(pending.email || "").trim().toLowerCase();
+      const userEmail = String(currentUser.email || "").trim().toLowerCase();
+      if (!pendingEmail || pendingEmail !== userEmail) {
+        return;
+      }
+      const wantedRole = normalizeRole(pending.role);
+      const wantedName = String(pending.name || "").trim();
+      if (
+        currentProfile.role !== wantedRole ||
+        (wantedName && currentProfile.name !== wantedName)
+      ) {
+        const saved = await applySignupProfile(
+          currentUser,
+          wantedName || currentProfile.name,
+          wantedRole
+        );
+        if (saved) {
+          await loadCurrentProfile();
+        } else {
+          return;
+        }
+      }
+      try {
+        window.localStorage.removeItem(PENDING_SIGNUP_KEY);
+      } catch (error) {
+        /* storage may be unavailable */
+      }
+    }
     async function openProfile() {
       if (!currentUser) {
         openAuth("login");
@@ -672,10 +814,9 @@ let currentUser = null;
         "profileEmail"
       ).value =
         currentUser.email || "";
-      document.getElementById(
-        "profileRole"
-      ).value =
-        currentProfile?.role || "client";
+      const profileRoleInput = document.getElementById("profileRole");
+      profileRoleInput.value = currentProfile?.role || "client";
+      profileRoleInput.disabled = true;
       document.getElementById(
         "profileBio"
       ).value =
@@ -716,10 +857,15 @@ let currentUser = null;
         document.getElementById(
           "profileName"
         ).value.trim();
-      const role =
+      const formRole =
         document.getElementById(
           "profileRole"
         ).value;
+      // Account type is permanent. Ignore any tampering with the disabled field.
+      const role =
+        currentProfile && currentProfile.role
+          ? currentProfile.role
+          : normalizeRole(formRole);
       const bio =
         document.getElementById(
           "profileBio"
@@ -2205,33 +2351,31 @@ let currentUser = null;
                 "open"
             });
         }
-        const {
-          data,
-          error
-        } =
+        const result =
           await query
             .select(
               "id, client_id, title, description, budget, status, created_at"
             )
-            .single();
-        if (error) {
-          throw error;
-        }
-        if (data) {
-          const existingIndex =
-            allProjects.findIndex(
-              function (project) {
-                return project.id === data.id;
-              }
-            );
-          if (existingIndex >= 0) {
-            allProjects[existingIndex] = data;
-          } else {
-            allProjects = [
-              data,
-              ...allProjects
-            ];
-          }
+            .maybeSingle();
+        const data = requireChangedRow(
+          result,
+          isEditing
+            ? "Could not update the project."
+            : "Could not save project."
+        );
+        const existingIndex =
+          allProjects.findIndex(
+            function (project) {
+              return project.id === data.id;
+            }
+          );
+        if (existingIndex >= 0) {
+          allProjects[existingIndex] = data;
+        } else {
+          allProjects = [
+            data,
+            ...allProjects
+          ];
         }
         status.style.color =
           "#16a34a";
@@ -3589,7 +3733,7 @@ let currentUser = null;
       const newButton = document.getElementById("dashboardNewProjectButton");
       if (newButton) {
         newButton.style.display =
-          isClient || currentIsAdmin ? "inline-flex" : "none";
+          isClient ? "inline-flex" : "none";
       }
       const projectsTab = document.querySelector('[data-dashboard-tab="projects"]');
       const applicationsTab = document.querySelector('[data-dashboard-tab="applications"]');
@@ -3628,6 +3772,19 @@ let currentUser = null;
         tab !== "jobs" &&
         tab !== "approvals"
       ) {
+        return;
+      }
+      const isClient =
+        currentProfile && currentProfile.role === "client";
+      const isFreelancer =
+        currentProfile && currentProfile.role === "freelancer";
+      if (tab === "applications" && !isFreelancer) {
+        return;
+      }
+      if (tab === "projects" && !isClient) {
+        return;
+      }
+      if (tab === "jobs" && !isClient && !currentIsAdmin) {
         return;
       }
       if (tab === "approvals" && !currentIsAdmin) {
@@ -3724,14 +3881,20 @@ let currentUser = null;
       const projects = result.projects;
 
       if (!projects.length) {
+        const canPostProject =
+          currentProfile && currentProfile.role === "client";
         content.innerHTML = `
           <div class="empty-message">
             You have not posted a project yet.
-            <div style="margin-top:16px;">
-              <button type="button" class="btn btn-primary" onclick="openProjectModal()">
-                Post your first project
-              </button>
-            </div>
+            ${
+              canPostProject
+                ? `<div style="margin-top:16px;">
+                    <button type="button" class="btn btn-primary" onclick="openProjectModal()">
+                      Post your first project
+                    </button>
+                  </div>`
+                : ""
+            }
           </div>
         `;
         return;
@@ -3808,7 +3971,7 @@ let currentUser = null;
           <div class="empty-message">
             You have not applied to any project yet.
             <div style="margin-top:16px;">
-              <button type="button" class="btn btn-primary" onclick="closeModal('dashboardModal'); scrollToFreelancers();">
+              <button type="button" class="btn btn-primary" onclick="closeModal('dashboardModal'); scrollToProjects();">
                 Browse projects
               </button>
             </div>
@@ -3848,6 +4011,28 @@ let currentUser = null;
         }
       });
 
+      const clientIds = Array.from(
+        new Set(
+          (projectsResult.data || [])
+            .map(function (project) {
+              return project.client_id;
+            })
+            .filter(Boolean)
+        )
+      );
+      const clientMap = new Map();
+      if (clientIds.length) {
+        const clientProfiles = await supabaseClient
+          .from("profiles")
+          .select("id, name")
+          .in("id", clientIds);
+        if (!clientProfiles.error) {
+          (clientProfiles.data || []).forEach(function (profile) {
+            clientMap.set(profile.id, profile.name || "Client");
+          });
+        }
+      }
+
       const list = document.createElement("div");
       list.className = "dash-list";
 
@@ -3876,7 +4061,7 @@ let currentUser = null;
               project.client_id
                 ? `<button type="button" class="btn btn-secondary btn-sm"
                     data-profile-id="${escapeHTML(project.client_id)}"
-                    data-profile-name="Client"
+                    data-profile-name="${escapeHTML(clientMap.get(project.client_id) || "Client")}"
                     data-profile-role="client"
                     onclick="openChatFromButton(this)">
                     Message client
@@ -4096,7 +4281,7 @@ let currentUser = null;
       if (!window.confirm(question)) {
         return;
       }
-      const { error } = await supabaseClient
+      const result = await supabaseClient
         .from("jobs")
         .update({
           moderation_status: decision,
@@ -4104,9 +4289,15 @@ let currentUser = null;
             decision === "rejected" ? "Rejected by the site owner." : "",
           reviewed_at: new Date().toISOString()
         })
-        .eq("id", jobId);
+        .eq("id", jobId)
+        .select("id");
 
-      if (error) {
+      try {
+        requireChangedRow(
+          result,
+          "Could not update job approval."
+        );
+      } catch (error) {
         alert(error.message || "Could not update job approval.");
         return;
       }
@@ -4123,13 +4314,19 @@ let currentUser = null;
       if (!window.confirm("Delete this job?")) {
         return;
       }
-      const { error } = await supabaseClient
+      const result = await supabaseClient
         .from("jobs")
         .delete()
         .eq("id", jobId)
-        .eq("employer_id", currentUser.id);
+        .eq("employer_id", currentUser.id)
+        .select("id");
 
-      if (error) {
+      try {
+        requireChangedRow(
+          result,
+          "Could not delete the job."
+        );
+      } catch (error) {
         alert(error.message || "Could not delete the job.");
         return;
       }
@@ -4307,15 +4504,19 @@ let currentUser = null;
         return;
       }
 
+      let projectStatusWarning = false;
+
       try {
         const updateResult = await supabaseClient
           .from("applications")
           .update({ status: decision })
-          .eq("id", applicationId);
+          .eq("id", applicationId)
+          .select("id");
 
-        if (updateResult.error) {
-          throw updateResult.error;
-        }
+        requireChangedRow(
+          updateResult,
+          "Could not update the application."
+        );
 
         const project =
           allProjects.find(function (item) {
@@ -4330,12 +4531,19 @@ let currentUser = null;
             const statusResult = await supabaseClient
               .from("projects")
               .update({ status: "in_progress" })
-              .eq("id", projectId);
+              .eq("id", projectId)
+              .select("id");
 
-            if (statusResult.error) {
+            if (
+              statusResult.error ||
+              !statusResult.data ||
+              !statusResult.data.length
+            ) {
+              projectStatusWarning = true;
               console.error(
                 "Could not move the project to in_progress:",
-                statusResult.error
+                statusResult.error ||
+                  "No project row was updated. Check the project policies."
               );
             }
           }
@@ -4353,6 +4561,11 @@ let currentUser = null;
         }
         await loadProjects();
         await refreshDashboard();
+        if (projectStatusWarning) {
+          alert(
+            "Application accepted, but the project status could not be updated."
+          );
+        }
       } catch (error) {
         console.error("Update application error:", error);
         alert(
@@ -4424,11 +4637,13 @@ let currentUser = null;
         const result = await supabaseClient
           .from("projects")
           .update({ status: status })
-          .eq("id", projectId);
+          .eq("id", projectId)
+          .select("id");
 
-        if (result.error) {
-          throw result.error;
-        }
+        requireChangedRow(
+          result,
+          "Could not update the project."
+        );
 
         await loadProjects();
         await refreshDashboard();
@@ -4448,21 +4663,33 @@ let currentUser = null;
       }
 
       try {
-        // Remove applications first so the delete works even if the table has
-        // no ON DELETE CASCADE rule.
-        await supabaseClient
-          .from("applications")
-          .delete()
-          .eq("project_id", projectId);
-
-        const result = await supabaseClient
+        // Delete the project first. If the database has no ON DELETE CASCADE
+        // rule, remove its applications and try again.
+        let result = await supabaseClient
           .from("projects")
           .delete()
-          .eq("id", projectId);
+          .eq("id", projectId)
+          .select("id");
 
-        if (result.error) {
-          throw result.error;
+        if (result.error && result.error.code === "23503") {
+          const applicationsResult = await supabaseClient
+            .from("applications")
+            .delete()
+            .eq("project_id", projectId);
+          if (applicationsResult.error) {
+            throw applicationsResult.error;
+          }
+          result = await supabaseClient
+            .from("projects")
+            .delete()
+            .eq("id", projectId)
+            .select("id");
         }
+
+        requireChangedRow(
+          result,
+          "Could not delete the project."
+        );
 
         myProjectsCache = myProjectsCache.filter(function (project) {
           return project.id !== projectId;
@@ -4590,6 +4817,7 @@ let currentUser = null;
     let editingJobId = null;
     let currentPosterJob = null;
     let posterImage = null;
+    let posterFieldsLang = "lo";
     let jobQuery = "";
     let jobCategory = "all";
     let jobType = "all";
@@ -5240,6 +5468,59 @@ let currentUser = null;
       return posterLogoPromise;
     }
 
+    function posterAutoFields(job, lang) {
+      const details = [];
+      if (job.salary) {
+        details.push(
+          (lang === "lo" ? "ເງິນເດືອນ: " : "Salary: ") + job.salary
+        );
+      }
+      const description =
+        job["description_" + lang] || job.description || "";
+      if (description) {
+        details.push(String(description).slice(0, 300));
+      }
+      if (job.contact) {
+        details.push(
+          (lang === "lo" ? "ຕິດຕໍ່: " : "Contact: ") + job.contact
+        );
+      }
+      return {
+        headline: job["title_" + lang] || job.title || "",
+        subline: [
+          job["company_" + lang] || job.company || "",
+          job["location_" + lang] || job.location || ""
+        ]
+          .filter(Boolean)
+          .join(" · "),
+        details: details.join("\n")
+      };
+    }
+
+    function fillPosterFields(job, lang, force) {
+      if (!job) {
+        return;
+      }
+      const oldAuto = posterAutoFields(job, posterFieldsLang);
+      const newAuto = posterAutoFields(job, lang);
+      const fields = {
+        posterHeadline: "headline",
+        posterSubline: "subline",
+        posterDetails: "details"
+      };
+      Object.keys(fields).forEach(function (id) {
+        const input = document.getElementById(id);
+        if (!input) {
+          return;
+        }
+        const key = fields[id];
+        if (force || !input.value.trim() || input.value === oldAuto[key]) {
+          input.value = newAuto[key];
+        }
+      });
+      posterFieldsLang = lang;
+    }
+
     async function openPosterStudio(jobId) {
       let job =
         myJobsCache.find(function (item) {
@@ -5271,27 +5552,7 @@ let currentUser = null;
       document.getElementById("posterLanguage").value = lang;
       document.getElementById("posterTemplate").value = "modern";
       document.getElementById("posterAccent").value = "#eb4f69";
-      document.getElementById("posterHeadline").value =
-        job["title_" + lang] || job.title || "";
-      document.getElementById("posterSubline").value = [
-        job["company_" + lang] || job.company || "",
-        job["location_" + lang] || job.location || ""
-      ]
-        .filter(Boolean)
-        .join(" · ");
-      const details = [];
-      if (job.salary) {
-        details.push((lang === "lo" ? "ເງິນເດືອນ: " : "Salary: ") + job.salary);
-      }
-      const posterDescription =
-        job["description_" + lang] || job.description || "";
-      if (posterDescription) {
-        details.push(String(posterDescription).slice(0, 300));
-      }
-      if (job.contact) {
-        details.push((lang === "lo" ? "ຕິດຕໍ່: " : "Contact: ") + job.contact);
-      }
-      document.getElementById("posterDetails").value = details.join("\n");
+      fillPosterFields(job, lang, true);
       document.getElementById("posterCaption").value = "";
       const fileInput = document.getElementById("posterPhoto");
       if (fileInput) {
@@ -5304,6 +5565,9 @@ let currentUser = null;
     }
 
     function posterLanguageChanged() {
+      const lang =
+        document.getElementById("posterLanguage").value || "lo";
+      fillPosterFields(currentPosterJob, lang, false);
       generatePosterCaption();
       renderPoster();
     }

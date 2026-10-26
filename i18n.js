@@ -139,6 +139,11 @@
     /* --- profile / projects ---------------------------------------------- */
     "Your Profile": "ໂປຣໄຟລ໌ຂອງທ່ານ",
     Role: "ບົດບາດ",
+    "Account type": "ປະເພດບັນຊີ",
+    "Choose carefully. Your account type cannot be changed later.":
+      "ເລືອກໃຫ້ດີ. ປະເພດບັນຊີຈະປ່ຽນບໍ່ໄດ້ພາຍຫຼັງ.",
+    "Account type is permanent. Create a separate account if you need the other role.":
+      "ປະເພດບັນຊີຖາວອນ. ຖ້າຕ້ອງການອີກບົດບາດໜຶ່ງ ໃຫ້ສ້າງບັນຊີແຍກ.",
     Client: "ຜູ້ຈ້າງ",
     Freelancer: "ຟຣີແລນຊ໌",
     Bio: "ປະຫວັດຫຍໍ້",
@@ -522,6 +527,12 @@
     "Account created. You are logged in.": "ສ້າງບັນຊີແລ້ວ. ທ່ານໄດ້ເຂົ້າສູ່ລະບົບ.",
     "Account created. Check your email to confirm your address, then log in.":
       "ສ້າງບັນຊີແລ້ວ. ກວດອີເມວເພື່ອຢືນຢັນທີ່ຢູ່ ແລ້ວເຂົ້າສູ່ລະບົບ.",
+    "Account created. Open Profile, choose your account type and save it once.":
+      "ສ້າງບັນຊີແລ້ວ. ເປີດໂປຣໄຟລ໌, ເລືອກປະເພດບັນຊີ ແລ້ວບັນທຶກໜຶ່ງຄັ້ງ.",
+    "Could not update the application.": "ອັບເດດໃບສະໝັກບໍ່ສຳເລັດ.",
+    "Application accepted, but the project status could not be updated.":
+      "ຕົກລົງໃບສະໝັກແລ້ວ ແຕ່ບໍ່ສາມາດອັບເດດສະຖານະໂຄງການໄດ້.",
+    "Could not save changes.": "ບັນທຶກການປ່ຽນແປງບໍ່ສຳເລັດ.",
     "Posting project...": "ກຳລັງລົງປະກາດໂຄງການ...",
     "Saving changes...": "ກຳລັງບັນທຶກການແກ້ໄຂ...",
     "Project posted successfully.": "ລົງປະກາດໂຄງການສຳເລັດ.",
