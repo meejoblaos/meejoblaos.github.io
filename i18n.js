@@ -1,4 +1,4 @@
-/* =============================================================================
+﻿/* =============================================================================
    MEEJOB — language layer (English / Lao)
    -----------------------------------------------------------------------------
    The site markup stays in English so both languages share one source. When
@@ -208,7 +208,7 @@
     "Password updated. You can log in now.":
       "ອັບເດດລະຫັດຜ່ານແລ້ວ. ທ່ານສາມາດເຂົ້າສູ່ລະບົບໄດ້ເລີຍ.",
     "Passwords do not match.": "ລະຫັດຜ່ານບໍ່ກົງກັນ.",
-    "Please enter a job title.": "ກະລຸນາໃສ່ຊື່ວຽກ.",
+    "Please enter a job title.": "ກະລຸນາໃສ່ຕຳແໜ່ງວຽກ.",
     "Please enter a project description.": "ກະລຸນາໃສ່ລາຍລະອຽດໂຄງການ.",
     "Please enter a project title.": "ກະລຸນາໃສ່ຊື່ໂຄງການ.",
     "Please enter a valid budget.": "ກະລຸນາໃສ່ງົບປະມານທີ່ຖືກຕ້ອງ.",
@@ -257,7 +257,7 @@
     "Job categories": "ໝວດໝູ່ວຽກ",
     "Job category": "ໝວດໝູ່ວຽກ",
     "Job type": "ປະເພດວຽກ",
-    "Job title": "ຊື່ວຽກ",
+    "Job title": "ຕຳແໜ່ງວຽກ",
     Company: "ບໍລິສັດ",
     Location: "ສະຖານທີ່",
     "Post a Job": "ລົງປະກາດວຽກ",
@@ -290,7 +290,7 @@
       "ຂໍ້ຄວາມວຽກມີຄຳຕ້ອງຫ້າມ. ກະລຸນາລຶບຄຳຫຍາບຄາຍ ແລ້ວລອງໃໝ່.",
     "Only an administrator can change job approval status.":
       "ສະເພາະຜູ້ດູແລລະບົບຈຶ່ງປ່ຽນສະຖານະອະນຸມັດໄດ້.",
-    "Please enter a job title.": "ກະລຸນາໃສ່ຊື່ວຽກ.",
+    "Please enter a job title.": "ກະລຸນາໃສ່ຕຳແໜ່ງວຽກ.",
     "Please enter a job description.": "ກະລຸນາໃສ່ລາຍລະອຽດວຽກ.",
     "Could not publish the job.": "ເຜີຍແຜ່ວຽກບໍ່ສຳເລັດ.",
     "Edit job": "ແກ້ໄຂວຽກ",
