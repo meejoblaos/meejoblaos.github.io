@@ -5640,6 +5640,9 @@ let currentUser = null;
     let jobImageExistingUrl = "";
     const JOB_IMAGE_BUCKET = "job-images";
     const JOB_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+    // Sample listings are kept for local testing but hidden on the live site
+    // until real jobs are published. Set to true to show them again.
+    const SHOW_SAMPLE_JOBS = false;
     let currentPosterJob = null;
     let posterImage = null;
     let posterFieldsLang = "lo";
@@ -5818,7 +5821,9 @@ let currentUser = null;
         return;
       }
       const seeded =
-        Array.isArray(window.MEEJOB_JOBS) ? window.MEEJOB_JOBS.slice() : [];
+        SHOW_SAMPLE_JOBS && Array.isArray(window.MEEJOB_JOBS)
+          ? window.MEEJOB_JOBS.slice()
+          : [];
       allJobs = seeded.map(normalizeJob);
       renderJobFilters();
       renderProvinceGrid();
