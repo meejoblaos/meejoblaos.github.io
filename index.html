@@ -209,6 +209,10 @@
           <option value="marketing">Marketing</option>
           <option value="other">Other</option>
         </select>
+        <label class="sr-only" for="heroProvince">Province</label>
+        <select id="heroProvince">
+          <option value="all">All provinces</option>
+        </select>
         <button type="submit" class="btn btn-primary">Search</button>
       </form>
 
@@ -280,6 +284,16 @@
           role="group"
           aria-label="Filter jobs by category"
         ></div>
+        <div class="province-select-row">
+          <label class="sr-only" for="jobProvinceFilter">Filter jobs by province</label>
+          <select
+            id="jobProvinceFilter"
+            class="job-province-select"
+            onchange="setJobProvince(this.value)"
+          >
+            <option value="all">All provinces</option>
+          </select>
+        </div>
       </div>
 
       <div class="jobs-toolbar">
@@ -363,6 +377,16 @@
           <span class="category-count" data-count-for="other">0 open</span>
         </button>
       </div>
+    </section>
+
+    <!-- PROVINCES -->
+    <section id="provinces">
+      <div class="section-title">
+        <h2>Browse by province</h2>
+        <p>Find work near you — every province and the capital, in one place.</p>
+      </div>
+
+      <div class="province-grid" id="provinceGrid"></div>
     </section>
 
     <!-- FREELANCE PROJECTS -->
@@ -581,6 +605,7 @@
         <a href="#categories">Job categories</a>
         <a href="#projects">Freelance projects</a>
         <a href="#talent">Talent profiles</a>
+        <a href="#provinces">Provinces</a>
         <a href="#pricing">Membership</a>
         <a href="#how-it-works">How it works</a>
       </div>
@@ -1022,11 +1047,18 @@
       </div>
 
       <div class="form-group">
-        <label for="jobLocation">Location</label>
+        <label for="jobProvince">Province</label>
+        <select id="jobProvince">
+          <option value="">Choose a province</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="jobLocation">District / village (optional)</label>
         <input
           type="text"
           id="jobLocation"
-          placeholder="e.g. Vientiane"
+          placeholder="e.g. Ban Phonsavanh, Sikhottabong"
           maxlength="140"
         >
       </div>
@@ -1085,6 +1117,30 @@
           placeholder="Describe the role, duties and requirements..."
           maxlength="3000"
         ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="jobImage">Poster or photo (optional)</label>
+        <input
+          type="file"
+          id="jobImage"
+          accept="image/jpeg,image/png,image/webp"
+          onchange="onJobImageSelected(this)"
+        >
+        <div id="jobImagePreview" class="job-image-preview" hidden>
+          <img id="jobImagePreviewImg" alt="Job poster preview">
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="removeJobImage()"
+          >
+            Remove image
+          </button>
+        </div>
+        <p class="small text-muted job-image-hint">
+          JPG, PNG or WebP up to 5 MB. The image is resized automatically and
+          shows on your job card and job page.
+        </p>
       </div>
 
       <div id="jobFormStatus" class="status-message" role="status" aria-live="polite"></div>

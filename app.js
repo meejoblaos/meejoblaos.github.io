@@ -99,6 +99,9 @@ let currentUser = null;
         }
         await checkCurrentUser();
         maybeShowPreviewGate();
+        fillProvinceOptions("heroProvince", true);
+        fillProvinceOptions("jobProvinceFilter", true);
+        fillProvinceOptions("jobProvince", false);
         await loadJobs();
         await loadFreelancers();
         await loadProjects();
@@ -4033,8 +4036,7 @@ let currentUser = null;
         );
       });
       setText("membershipFormPlan", membershipPlanLabel(plan));
-      updateMembershipAmounts();
-    }
+      updateMembershipAmounts();    }
 
     function paymentAmountFor(plan, currency) {
       const planInfo = MEMBERSHIP_PLANS[plan] || MEMBERSHIP_PLANS.monthly;
@@ -5633,12 +5635,18 @@ let currentUser = null;
     let allJobs = [];
     let myJobsCache = [];
     let editingJobId = null;
+    let jobImageFile = null;
+    let jobImageRemoved = false;
+    let jobImageExistingUrl = "";
+    const JOB_IMAGE_BUCKET = "job-images";
+    const JOB_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
     let currentPosterJob = null;
     let posterImage = null;
     let posterFieldsLang = "lo";
     let jobQuery = "";
     let jobCategory = "all";
     let jobType = "all";
+    let jobProvince = "all";
 
     const JOB_TYPES = {
       all: "All jobs",
@@ -5648,6 +5656,109 @@ let currentUser = null;
     };
 
     const JOB_TYPE_KEYS = ["all", "full_time", "part_time", "short_term"];
+
+    // All 17 provinces plus Vientiane Capital.
+    const LAOS_PROVINCES = [
+      { id: "vientiane-capital", en: "Vientiane Capital", lo: "ນະຄອນຫຼວງວຽງຈັນ" },
+      { id: "phongsaly", en: "Phongsaly", lo: "ຜົ້ງສາລີ" },
+      { id: "luang-namtha", en: "Luang Namtha", lo: "ຫຼວງນໍ້າທາ" },
+      { id: "oudomxay", en: "Oudomxay", lo: "ອຸດົມໄຊ" },
+      { id: "bokeo", en: "Bokeo", lo: "ບໍ່ແກ້ວ" },
+      { id: "luang-prabang", en: "Luang Prabang", lo: "ຫຼວງພະບາງ" },
+      { id: "houaphanh", en: "Houaphanh", lo: "ຫົວພັນ" },
+      { id: "xayaboury", en: "Xayaboury", lo: "ໄຊຍະບູລີ" },
+      { id: "xieng-khouang", en: "Xieng Khouang", lo: "ຊຽງຂວາງ" },
+      { id: "vientiane-province", en: "Vientiane Province", lo: "ວຽງຈັນ" },
+      { id: "bolikhamxay", en: "Bolikhamxay", lo: "ບໍລິຄຳໄຊ" },
+      { id: "khammouane", en: "Khammouane", lo: "ຄຳມ່ວນ" },
+      { id: "savannakhet", en: "Savannakhet", lo: "ສະຫວັນນະເຂດ" },
+      { id: "salavan", en: "Salavan", lo: "ສາລະວັນ" },
+      { id: "sekong", en: "Sekong", lo: "ເຊກອງ" },
+      { id: "champasak", en: "Champasak", lo: "ຈຳປາສັກ" },
+      { id: "attapeu", en: "Attapeu", lo: "ອັດຕະປື" },
+      { id: "xaysomboun", en: "Xaysomboun", lo: "ໄຊສົມບູນ" }
+    ];
+
+    function findProvince(id) {
+      return LAOS_PROVINCES.find(function (province) {
+        return province.id === id;
+      }) || null;
+    }
+
+    function findProvinceByText(value) {
+      const text = String(value || "").trim().toLowerCase();
+      if (!text) {
+        return null;
+      }
+      const exact = LAOS_PROVINCES.find(function (province) {
+        return text === province.en.toLowerCase() || text === province.lo;
+      });
+      if (exact) {
+        return exact;
+      }
+      // Legacy jobs stored "Vientiane" for the capital.
+      if (text === "vientiane" || text.startsWith("vientiane ·")) {
+        return LAOS_PROVINCES[0];
+      }
+      return (
+        LAOS_PROVINCES.find(function (province) {
+          return (
+            text.startsWith(province.en.toLowerCase()) ||
+            text.startsWith(province.lo)
+          );
+        }) || null
+      );
+    }
+
+    function hasLaoText(value) {
+      return /[\u0E80-\u0EFF]/.test(String(value || ""));
+    }
+
+    function jobLocationLabel(job) {
+      const lang = currentLang();
+      const base = String(job.location || "").trim();
+      const en = String(job.location_en || "").trim();
+      if (lang === "en") {
+        return en || base;
+      }
+      if (hasLaoText(base)) {
+        return base;
+      }
+      const source = base || en;
+      const province = findProvinceByText(source);
+      if (province) {
+        const separator = source.indexOf("·");
+        const detail =
+          separator === -1 ? "" : source.slice(separator + 1).trim();
+        return detail ? province.lo + " · " + detail : province.lo;
+      }
+      return base || en;
+    }
+
+    function jobMatchesProvince(job, provinceId) {
+      if (!provinceId || provinceId === "all") {
+        return true;
+      }
+      const province = findProvince(provinceId);
+      if (!province) {
+        return true;
+      }
+      const text = [job.location, job.location_en]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .trim();
+      if (text.indexOf(province.en.toLowerCase()) !== -1) {
+        return true;
+      }
+      if (province.lo && text.indexOf(province.lo) !== -1) {
+        return true;
+      }
+      if (provinceId === "vientiane-capital") {
+        return /(^|\s)vientiane(\s|$)/.test(text) && text.indexOf("province") === -1;
+      }
+      return false;
+    }
 
     function currentLang() {
       return document.documentElement.lang === "en" ? "en" : "lo";
@@ -5687,8 +5798,8 @@ let currentUser = null;
         job.company_en,
         localized(job, "location"),
         job.location,
-        job.location_lo,
         job.location_en,
+        jobLocationLabel(job),
         localized(job, "description"),
         job.description,
         job.description_lo,
@@ -5710,8 +5821,10 @@ let currentUser = null;
         Array.isArray(window.MEEJOB_JOBS) ? window.MEEJOB_JOBS.slice() : [];
       allJobs = seeded.map(normalizeJob);
       renderJobFilters();
+      renderProvinceGrid();
       renderJobs();
       updateCategoryCounts();
+      updateProvinceCounts();
       updateHeroStats();
 
       try {
@@ -5729,8 +5842,10 @@ let currentUser = null;
           // Real jobs exist — hide the sample listings.
           allJobs = dbJobs;
           renderJobFilters();
+          renderProvinceGrid();
           renderJobs();
           updateCategoryCounts();
+          updateProvinceCounts();
           updateHeroStats();
         }
       } catch (error) {
@@ -5769,6 +5884,9 @@ let currentUser = null;
           return false;
         }
         if (!jobMatchesCategory(job, jobCategory)) {
+          return false;
+        }
+        if (!jobMatchesProvince(job, jobProvince)) {
           return false;
         }
         if (!query) {
@@ -5824,6 +5942,88 @@ let currentUser = null;
       }
     }
 
+    function fillProvinceOptions(selectId, includeAll) {
+      const select = document.getElementById(selectId);
+      if (!select) {
+        return;
+      }
+      const selected = select.value;
+      const options = LAOS_PROVINCES.map(function (province) {
+        return (
+          '<option value="' + province.id + '">' +
+          escapeHTML(province.en) +
+          "</option>"
+        );
+      });
+      if (includeAll) {
+        options.unshift('<option value="all">All provinces</option>');
+      } else {
+        options.unshift('<option value="">Choose a province</option>');
+      }
+      select.innerHTML = options.join("");
+      if (selected) {
+        select.value = selected;
+      }
+    }
+
+    function renderProvinceGrid() {
+      const grid = document.getElementById("provinceGrid");
+      if (!grid) {
+        return;
+      }
+      grid.innerHTML = LAOS_PROVINCES.map(function (province) {
+        const active = jobProvince === province.id ? " is-active" : "";
+        return (
+          '<button type="button" class="province-card' + active +
+          '" data-province="' + province.id + '"' +
+          ' onclick="chooseProvince(\'' + province.id + '\')">' +
+          '<span class="province-name">' + escapeHTML(province.en) + "</span>" +
+          '<span class="province-count" data-province-count="' + province.id + '">0 open</span>' +
+          "</button>"
+        );
+      }).join("");
+    }
+
+    function countJobsInProvince(provinceId) {
+      return allJobs.filter(function (job) {
+        return jobMatchesProvince(job, provinceId);
+      }).length;
+    }
+
+    function updateProvinceCounts() {
+      document.querySelectorAll("[data-province-count]").forEach(function (el) {
+        el.textContent =
+          countJobsInProvince(el.getAttribute("data-province-count")) + " open";
+      });
+    }
+
+    function setJobProvince(provinceId) {
+      jobProvince = findProvince(provinceId) ? provinceId : "all";
+      const heroProvince = document.getElementById("heroProvince");
+      if (heroProvince) {
+        heroProvince.value = jobProvince;
+      }
+      const provinceFilter = document.getElementById("jobProvinceFilter");
+      if (provinceFilter) {
+        provinceFilter.value = jobProvince;
+      }
+      document.querySelectorAll(".province-card").forEach(function (card) {
+        card.classList.toggle(
+          "is-active",
+          card.getAttribute("data-province") === jobProvince
+        );
+      });
+      renderJobs();
+    }
+
+    function chooseProvince(provinceId) {
+      setJobProvince(provinceId);
+      const section = document.getElementById("jobs");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+
     function renderJobs() {
       const container = document.getElementById("jobList");
       if (!container) {
@@ -5838,8 +6038,8 @@ let currentUser = null;
       if (!jobs.length) {
         container.innerHTML =
           '<div class="empty-message">' +
-          (jobQuery || jobCategory !== "all" || jobType !== "all"
-            ? "No jobs match your search. Try another category or job type."
+          (jobQuery || jobCategory !== "all" || jobType !== "all" || jobProvince !== "all"
+            ? "No jobs match your search. Try another category, job type or province."
             : "No jobs posted yet.") +
           "</div>";
         return;
@@ -5848,7 +6048,7 @@ let currentUser = null;
         .map(function (job) {
           const typeKey = JOB_TYPES[job.job_type] ? job.job_type : "full_time";
           const typeLabel = JOB_TYPES[typeKey];
-          const location = localized(job, "location");
+          const location = jobLocationLabel(job);
           return (
             '<article class="job-card">' +
             '<div class="job-card-top">' +
@@ -5856,6 +6056,11 @@ let currentUser = null;
             escapeHTML(typeLabel) + "</span>" +
             (job.sample ? '<span class="sample-badge">Sample</span>' : "") +
             "</div>" +
+            (job.image_url
+              ? '<img class="job-card-image" src="' +
+                escapeHTML(job.image_url) +
+                '" alt="" loading="lazy">'
+              : "") +
             "<h3 data-no-i18n>" + escapeHTML(localized(job, "title")) + "</h3>" +
             '<p class="job-company" data-no-i18n>' + escapeHTML(localized(job, "company")) +
             (location ? " · " + escapeHTML(location) : "") + "</p>" +
@@ -5949,7 +6154,54 @@ let currentUser = null;
       editingJobId = job ? job.id : null;
       document.getElementById("jobTitle").value = job ? job.title || "" : "";
       document.getElementById("jobCompany").value = job ? job.company || "" : "";
-      document.getElementById("jobLocation").value = job ? job.location || "" : "";
+
+      const jobProvinceSelect = document.getElementById("jobProvince");
+      if (jobProvinceSelect) {
+        const province = job
+          ? findProvinceByText(job.location_en || job.location)
+          : null;
+        jobProvinceSelect.value = province ? province.id : "";
+      }
+      const jobLocationInput = document.getElementById("jobLocation");
+      if (jobLocationInput) {
+        let detail = job
+          ? String(job.location || job.location_en || "").trim()
+          : "";
+        const province = job
+          ? findProvinceByText(job.location_en || job.location)
+          : null;
+        if (province) {
+          if (detail.toLowerCase().indexOf(province.en.toLowerCase()) === 0) {
+            detail = detail.slice(province.en.length).replace(/^\s*·\s*/, "");
+          } else if (detail === province.lo) {
+            detail = "";
+          } else {
+            const separator = detail.indexOf("·");
+            if (separator !== -1) {
+              detail = detail.slice(separator + 1).trim();
+            }
+          }
+        }
+        jobLocationInput.value = detail;
+      }
+      const imagePreview = document.getElementById("jobImagePreview");
+      const imagePreviewImg = document.getElementById("jobImagePreviewImg");
+      const imageInput = document.getElementById("jobImage");
+      jobImageFile = null;
+      jobImageRemoved = false;
+      jobImageExistingUrl = job && job.image_url ? String(job.image_url) : "";
+      if (imageInput) {
+        imageInput.value = "";
+      }
+      if (imagePreview && imagePreviewImg) {
+        if (jobImageExistingUrl) {
+          imagePreviewImg.src = jobImageExistingUrl;
+          imagePreview.hidden = false;
+        } else {
+          imagePreviewImg.removeAttribute("src");
+          imagePreview.hidden = true;
+        }
+      }
       document.getElementById("jobType").value =
         job && JOB_TYPES[job.job_type] ? job.job_type : "full_time";
       document.getElementById("jobCategory").value =
@@ -5974,6 +6226,116 @@ let currentUser = null;
       openJobModal(jobId);
     }
 
+    function jobImageStatus(message, color) {
+      const status = document.getElementById("jobFormStatus");
+      if (!status) {
+        return;
+      }
+      status.style.color = color || "";
+      status.textContent = message || "";
+    }
+
+    function onJobImageSelected(input) {
+      const file = input && input.files ? input.files[0] : null;
+      if (!file) {
+        return;
+      }
+      if (!/^image\/(jpeg|png|webp)$/i.test(file.type)) {
+        jobImageStatus("Please choose a JPG, PNG or WebP image.", "#dc2626");
+        input.value = "";
+        return;
+      }
+      if (file.size > JOB_IMAGE_MAX_BYTES) {
+        jobImageStatus(
+          "That image is larger than 5 MB. Please choose a smaller file.",
+          "#dc2626"
+        );
+        input.value = "";
+        return;
+      }
+
+      jobImageFile = file;
+      jobImageRemoved = false;
+      const preview = document.getElementById("jobImagePreview");
+      const previewImg = document.getElementById("jobImagePreviewImg");
+      if (preview && previewImg) {
+        previewImg.src = URL.createObjectURL(file);
+        preview.hidden = false;
+      }
+      jobImageStatus("", "");
+    }
+
+    function removeJobImage() {
+      jobImageFile = null;
+      jobImageRemoved = true;
+      const input = document.getElementById("jobImage");
+      const preview = document.getElementById("jobImagePreview");
+      const previewImg = document.getElementById("jobImagePreviewImg");
+      if (input) {
+        input.value = "";
+      }
+      if (preview) {
+        preview.hidden = true;
+      }
+      if (previewImg) {
+        previewImg.removeAttribute("src");
+      }
+    }
+
+    function resizeJobImage(file) {
+      return new Promise(function (resolve, reject) {
+        const image = new Image();
+        const objectUrl = URL.createObjectURL(file);
+        image.onload = function () {
+          const maxSide = 1600;
+          const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          const context = canvas.getContext("2d");
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          URL.revokeObjectURL(objectUrl);
+          canvas.toBlob(
+            function (blob) {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error("Could not process the image."));
+              }
+            },
+            "image/jpeg",
+            0.85
+          );
+        };
+        image.onerror = function () {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error("Could not read the image."));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    async function uploadJobImage(file) {
+      const blob = await resizeJobImage(file);
+      const path =
+        currentUser.id +
+        "/" +
+        Date.now() +
+        "-" +
+        Math.random().toString(36).slice(2, 8) +
+        ".jpg";
+      const { error } = await supabaseClient.storage
+        .from(JOB_IMAGE_BUCKET)
+        .upload(path, blob, { contentType: "image/jpeg", upsert: false });
+      if (error) {
+        throw error;
+      }
+      const { data } = supabaseClient.storage
+        .from(JOB_IMAGE_BUCKET)
+        .getPublicUrl(path);
+      return data ? data.publicUrl : "";
+    }
+
     async function createJob() {
       if (!currentUser) {
         openAuth("login");
@@ -5991,7 +6353,21 @@ let currentUser = null;
       }
       const title = document.getElementById("jobTitle").value.trim();
       const company = document.getElementById("jobCompany").value.trim();
-      const location = document.getElementById("jobLocation").value.trim();
+      const provinceId = document.getElementById("jobProvince")
+        ? document.getElementById("jobProvince").value
+        : "";
+      const province = findProvince(provinceId);
+      const detail = document.getElementById("jobLocation").value.trim();
+      const locationEn = province
+        ? detail
+          ? province.en + " · " + detail
+          : province.en
+        : detail;
+      const locationLo = province
+        ? detail
+          ? province.lo + " · " + detail
+          : province.lo
+        : detail;
       const jobTypeValue = document.getElementById("jobType").value;
       const categoryValue = document.getElementById("jobCategory").value;
       const salary = document.getElementById("jobSalary").value.trim();
@@ -6012,6 +6388,30 @@ let currentUser = null;
         status.textContent = "Please enter a job description.";
         return;
       }
+      if (!province && !detail) {
+        status.style.color = "#dc2626";
+        status.textContent = "Please choose a province.";
+        return;
+      }
+
+      let imageUrl = jobImageExistingUrl || "";
+      if (jobImageFile) {
+        status.style.color = "#2563eb";
+        status.textContent = "Uploading image...";
+        try {
+          imageUrl = await uploadJobImage(jobImageFile);
+        } catch (error) {
+          console.error("Job image upload error:", error);
+          const message = error && error.message ? error.message : "";
+          status.style.color = "#dc2626";
+          status.textContent = /bucket not found/i.test(message)
+            ? "Image upload is not available yet. You can post without an image."
+            : message || "Could not upload the image.";
+          return;
+        }
+      } else if (jobImageRemoved) {
+        imageUrl = "";
+      }
 
       status.style.color = "#2563eb";
       status.textContent = "Submitting for approval...";
@@ -6021,13 +6421,19 @@ let currentUser = null;
       const fields = {
         title: title,
         company: company,
-        location: location,
+        location: locationLo,
+        location_en: locationEn,
         description: description,
         job_type: JOB_TYPES[jobTypeValue] ? jobTypeValue : "full_time",
         category: PROJECT_CATEGORIES[categoryValue] ? categoryValue : "other",
         salary: salary,
         contact: contact
       };
+      // Only touch image_url when there is an image to save or remove, so
+      // posting still works before supabase/job-images.sql has been run.
+      if (imageUrl || jobImageRemoved) {
+        fields.image_url = imageUrl || null;
+      }
 
       try {
         let savedJobId = editingJobId;
@@ -6128,7 +6534,7 @@ let currentUser = null;
       const typeLabel = JOB_TYPES[job.job_type] || "Full-time";
       const categoryLabel =
         (PROJECT_CATEGORIES[job.category] || {}).label || "Other";
-      const location = localized(job, "location");
+      const location = jobLocationLabel(job);
       body.innerHTML =
         '<div class="job-card-top">' +
         '<span class="job-type job-type-' + escapeHTML(job.job_type) + '">' +
@@ -6138,6 +6544,11 @@ let currentUser = null;
         '<h2 id="jobDetailTitle" data-no-i18n>' + escapeHTML(localized(job, "title")) + "</h2>" +
         '<p class="job-company" data-no-i18n>' + escapeHTML(localized(job, "company")) +
         (location ? " · " + escapeHTML(location) : "") + "</p>" +
+        (job.image_url
+          ? '<img class="job-detail-image" src="' +
+            escapeHTML(job.image_url) +
+            '" alt="">'
+          : "") +
         '<div class="job-detail-meta">' +
         "<span><strong>Salary</strong> " + (job.salary ? '<span data-no-i18n>' + escapeHTML(job.salary) + "</span>" : escapeHTML("Negotiable")) + "</span>" +
         "<span><strong>Category</strong> " + escapeHTML(categoryLabel) + "</span>" +
@@ -6984,19 +7395,36 @@ let currentUser = null;
       }
       const input = document.getElementById("heroSearchInput");
       const select = document.getElementById("heroCategory");
+      const provinceSelect = document.getElementById("heroProvince");
       jobQuery = input ? input.value : "";
       jobCategory =
         select && PROJECT_CATEGORIES[select.value] ? select.value : "all";
+      jobProvince =
+        provinceSelect && findProvince(provinceSelect.value)
+          ? provinceSelect.value
+          : "all";
 
       const jobSearch = document.getElementById("jobSearch");
       if (jobSearch) {
         jobSearch.value = jobQuery;
       }
 
+      const provinceFilter = document.getElementById("jobProvinceFilter");
+      if (provinceFilter) {
+        provinceFilter.value = jobProvince;
+      }
+
       document.querySelectorAll(".category-card").forEach(function (card) {
         card.classList.toggle(
           "is-active",
           card.getAttribute("data-category") === jobCategory
+        );
+      });
+
+      document.querySelectorAll(".province-card").forEach(function (card) {
+        card.classList.toggle(
+          "is-active",
+          card.getAttribute("data-province") === jobProvince
         );
       });
 
