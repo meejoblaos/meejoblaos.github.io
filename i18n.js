@@ -573,6 +573,136 @@
     Budget: "ງົບປະມານ",
     Category: "ໝວດໝູ່",
 
+    /* --- membership ------------------------------------------------------- */
+    Membership: "ສະມາຊິກ",
+    Member: "ສະມາຊິກ",
+    Renew: "ຕໍ່ອາຍຸ",
+    "Membership requests": "ຄຳຮ້ອງສະມາຊິກ",
+    "Simple Membership": "ສະມາຊິກແບບງ່າຍໆ",
+    "Your first month is free. Then choose the plan that fits you.":
+      "ເດືອນທຳອິດຟຣີ. ຫຼັງຈາກນັ້ນເລືອກແພັກເກດທີ່ເໝາະກັບທ່ານ.",
+    "First month free": "ເດືອນທຳອິດຟຣີ",
+    "Try MEEJOB free for 30 days": "ລອງໃຊ້ MEEJOB ຟຣີ 30 ວັນ",
+    "New members get their first month free. After that, choose a plan. No service fees, no commission — ever.":
+      "ສະມາຊິກໃໝ່ໄດ້ເດືອນທຳອິດຟຣີ. ຫຼັງຈາກນັ້ນເລືອກແພັກເກດ. ບໍ່ມີຄ່າທຳນຽມ ແລະ ບໍ່ມີຄ່າຄອມມິດຊັນ.",
+    "First month free · No service fees · No commission":
+      "ເດືອນທຳອິດຟຣີ · ບໍ່ມີຄ່າທຳນຽມ · ບໍ່ມີຄ່າຄອມມິດຊັນ",
+    "1 month": "1 ເດືອນ",
+    "3 months": "3 ເດືອນ",
+    "1 year": "1 ປີ",
+    "/ month": "/ ເດືອນ",
+    "/ 3 months": "/ 3 ເດືອນ",
+    "/ year": "/ ປີ",
+    "Flexible monthly plan.": "ແພັກເກດລາຍເດືອນທີ່ຍືດຫຍຸ່ນ.",
+    "Save $5 compared with monthly.":
+      "ປະຫຍັດ $5 ເມື່ອທຽບກັບລາຍເດືອນ.",
+    "Save $60 compared with monthly.":
+      "ປະຫຍັດ $60 ເມື່ອທຽບກັບລາຍເດືອນ.",
+    "Post jobs and projects": "ລົງປະກາດວຽກ ແລະ ໂຄງການ",
+    "Apply to freelance work": "ສະໝັກງານຟຣີແລນຊ໌",
+    "Message clients and freelancers": "ສົ່ງຂໍ້ຄວາມຫາຜູ້ຈ້າງ ແລະ ຟຣີແລນຊ໌",
+    "Unlimited poster studio": "ສ້າງໂປສເຕີໄດ້ບໍ່ຈຳກັດ",
+    "No service fees or commission": "ບໍ່ມີຄ່າທຳນຽມ ຫຼື ຄ່າຄອມມິດຊັນ",
+    "Everything in the monthly plan": "ທຸກຢ່າງໃນແພັກເກດລາຍເດືອນ",
+    "3 months of access": "ໃຊ້ງານໄດ້ 3 ເດືອນ",
+    "Priority support on Facebook": "ບໍລິການຊ່ວຍເຫຼືອດ່ວນຜ່ານ Facebook",
+    "Keep 100% of what you earn": "ເກັບລາຍໄດ້ 100%",
+    "Everything in the 3-month plan": "ທຸກຢ່າງໃນແພັກເກດ 3 ເດືອນ",
+    "12 months of access": "ໃຊ້ງານໄດ້ 12 ເດືອນ",
+    "Best value for active members":
+      "ຄຸ້ມຄ່າທີ່ສຸດສຳລັບສະມາຊິກທີ່ໃຊ້ງານເປັນປະຈຳ",
+    "Choose 1 month": "ເລືອກ 1 ເດືອນ",
+    "Choose 3 months": "ເລືອກ 3 ເດືອນ",
+    "Choose 1 year": "ເລືອກ 1 ປີ",
+    "Most popular": "ນິຍົມທີ່ສຸດ",
+    "Pay by QR transfer or contact the MEEJOB Facebook page. Your plan starts after your free month, so no paid days are lost.":
+      "ຈ່າຍຜ່ານ QR ຫຼື ຕິດຕໍ່ເພຈ Facebook MEEJOB. ແພັກເກດຈະເລີ່ມຫຼັງເດືອນຟຣີ ດັ່ງນັ້ນວັນທີ່ຈ່າຍແລ້ວຈະບໍ່ສູນເສຍ.",
+    "First month free for new members. No service fees and no commission.":
+      "ສະມາຊິກໃໝ່ໄດ້ເດືອນທຳອິດຟຣີ. ບໍ່ມີຄ່າທຳນຽມ ແລະ ບໍ່ມີຄ່າຄອມມິດຊັນ.",
+    "Choose your plan": "ເລືອກແພັກເກດຂອງທ່ານ",
+    "Selected plan:": "ແພັກເກດທີ່ເລືອກ:",
+    "Amount:": "ຈຳນວນເງິນ:",
+    "Payment method": "ວິທີຈ່າຍເງິນ",
+    "QR transfer": "ໂອນຜ່ານ QR",
+    "Facebook page": "ເພຈ Facebook",
+    "If the QR image does not appear, message our Facebook page and we will send it to you.":
+      "ຖ້າຮູບ QR ບໍ່ສະແດງ, ກະລຸນາສົ່ງຂໍ້ຄວາມຫາເພຈ Facebook ແລ້ວພວກເຮົາຈະສົ່ງໃຫ້.",
+    "Scan the QR code and transfer": "ສະແກນ QR ແລ້ວໂອນ",
+    "After transferring, add your reference below and send the request. Sending the receipt on Facebook helps us confirm faster.":
+      "ຫຼັງໂອນແລ້ວ, ໃສ່ເລກອ້າງອີງດ້ານລຸ່ມ ແລ້ວສົ່ງຄຳຮ້ອງ. ສົ່ງຫຼັກຖານການໂອນຜ່ານ Facebook ເພື່ອໃຫ້ຢືນຢັນໄວຂຶ້ນ.",
+    "Message MEEJOB on Facebook": "ສົ່ງຂໍ້ຄວາມຫາ MEEJOB ໃນ Facebook",
+    "Message the MEEJOB Facebook page to ask for the QR code or payment details.":
+      "ສົ່ງຂໍ້ຄວາມຫາເພຈ Facebook MEEJOB ເພື່ອຂໍ QR ຫຼື ຂໍ້ມູນການຈ່າຍເງິນ.",
+    "Tell us which plan you want and we will reply with the QR code and confirmation.":
+      "ບອກພວກເຮົາວ່າຕ້ອງການແພັກເກດໃດ ແລ້ວພວກເຮົາຈະສົ່ງ QR ແລະ ຢືນຢັນໃຫ້.",
+    "Contact (phone or Facebook)": "ຂໍ້ມູນຕິດຕໍ່ (ໂທລະສັບ ຫຼື Facebook)",
+    "Payment reference / sender name": "ເລກອ້າງອີງການຈ່າຍ / ຊື່ຜູ້ໂອນ",
+    "e.g. 020 5555 1234 or Facebook name":
+      "ເຊັ່ນ: 020 5555 1234 ຫຼື ຊື່ Facebook",
+    "e.g. transfer reference or your name":
+      "ເຊັ່ນ: ເລກອ້າງອີງການໂອນ ຫຼື ຊື່ຂອງທ່ານ",
+    "I have paid — send request": "ຂ້ອຍຈ່າຍແລ້ວ — ສົ່ງຄຳຮ້ອງ",
+    "Choose the currency you want to pay in.":
+      "ເລືອກສະກຸນເງິນທີ່ທ່ານຕ້ອງການຈ່າຍ.",
+    "QR from BCEL bank · LAPNet":
+      "QR ຈາກທະນາຄານ BCEL · LAPNet",
+    "This QR image is not available yet. Message our Facebook page and we will send it to you.":
+      "ຮູບ QR ນີ້ຍັງບໍ່ພ້ອມ. ສົ່ງຂໍ້ຄວາມຫາເພຈ Facebook ແລ້ວພວກເຮົາຈະສົ່ງໃຫ້.",
+    "LAK and THB amounts are rounded up at an approximate rate. The MEEJOB team confirms the exact amount with you.":
+      "ຍອດເງິນກີບ ແລະ ບາດ ຄຳນວນຈາກອັດຕາແລກປ່ຽນໂດຍປະມານ ແລະ ປັດຂຶ້ນ. ທີມ MEEJOB ຈະຢືນຢັນຍອດທີ່ແນ່ນອນກັບທ່ານ.",
+    "Request history": "ປະຫວັດຄຳຮ້ອງ",
+    "Setup needed": "ຕ້ອງຕັ້ງຄ່າ",
+    "Membership system is not set up yet.": "ລະບົບສະມາຊິກຍັງບໍ່ໄດ້ຕັ້ງຄ່າ.",
+    "Run supabase/membership.sql in the Supabase SQL editor to enable the free month and paid plans.":
+      "ລັນ supabase/membership.sql ໃນ Supabase SQL editor ເພື່ອເປີດເດືອນຟຣີ ແລະ ແພັກເກດຈ່າຍເງິນ.",
+    Administrator: "ຜູ້ດູແລ",
+    "No membership required": "ບໍ່ຕ້ອງມີສະມາຊິກ",
+    "You can post, apply and message without a plan.":
+      "ທ່ານສາມາດລົງປະກາດ, ສະໝັກ ແລະ ສົ່ງຂໍ້ຄວາມໄດ້ໂດຍບໍ່ຕ້ອງມີແພັກເກດ.",
+    "Free trial": "ທົດລອງຟຣີ",
+    "Choose a plan any time. Your paid days start after the free month.":
+      "ເລືອກແພັກເກດໄດ້ທຸກເວລາ. ວັນຈ່າຍເງິນຈະເລີ່ມຫຼັງເດືອນຟຣີ.",
+    "Active member": "ສະມາຊິກທີ່ໃຊ້ງານ",
+    "You can renew before this date — the new days are added after the current expiry.":
+      "ຕໍ່ອາຍຸກ່ອນວັນນີ້ໄດ້ — ວັນໃໝ່ຈະຖືກເພີ່ມຫຼັງວັນໝົດອາຍຸປັດຈຸບັນ.",
+    "Membership expired": "ສະມາຊິກໝົດອາຍຸ",
+    "Your free month has ended.": "ເດືອນຟຣີຂອງທ່ານສິ້ນສຸດແລ້ວ.",
+    "Choose a plan to keep posting, applying and messaging.":
+      "ເລືອກແພັກເກດເພື່ອສືບຕໍ່ລົງປະກາດ, ສະໝັກ ແລະ ສົ່ງຂໍ້ຄວາມ.",
+    "Choose a plan": "ເລືອກແພັກເກດ",
+    "Manage membership": "ຈັດການສະມາຊິກ",
+    "No membership requests yet.": "ຍັງບໍ່ມີຄຳຮ້ອງສະມາຊິກ.",
+    "Could not load your membership requests.":
+      "ໂຫຼດຄຳຮ້ອງສະມາຊິກບໍ່ສຳເລັດ.",
+    "Membership requests need supabase/membership.sql to be enabled.":
+      "ຄຳຮ້ອງສະມາຊິກຕ້ອງລັນ supabase/membership.sql ກ່ອນ.",
+    "Sending request...": "ກຳລັງສົ່ງຄຳຮ້ອງ...",
+    "Request sent. We will confirm your payment and activate your plan.":
+      "ສົ່ງຄຳຮ້ອງແລ້ວ. ພວກເຮົາຈະຢືນຢັນການຈ່າຍເງິນ ແລະ ເປີດແພັກເກດໃຫ້.",
+    "Please add a phone number or Facebook name so we can confirm your payment.":
+      "ກະລຸນາໃສ່ເບີໂທ ຫຼື ຊື່ Facebook ເພື່ອໃຫ້ພວກເຮົາຢືນຢັນການຈ່າຍເງິນ.",
+    "Could not send the membership request.":
+      "ສົ່ງຄຳຮ້ອງສະມາຊິກບໍ່ສຳເລັດ.",
+    "Cancel this membership request?": "ຍົກເລີກຄຳຮ້ອງສະມາຊິກນີ້?",
+    "Request cancelled.": "ຍົກເລີກຄຳຮ້ອງແລ້ວ.",
+    "Could not cancel the membership request.":
+      "ຍົກເລີກຄຳຮ້ອງບໍ່ສຳເລັດ.",
+    "Approve this membership payment?": "ອະນຸມັດການຈ່າຍເງິນສະມາຊິກນີ້?",
+    "Reject this membership request?": "ປະຕິເສດຄຳຮ້ອງສະມາຊິກນີ້?",
+    "Membership activated.": "ເປີດສະມາຊິກແລ້ວ.",
+    "Membership request rejected.": "ປະຕິເສດຄຳຮ້ອງສະມາຊິກແລ້ວ.",
+    "Could not review the membership request.":
+      "ກວດຄຳຮ້ອງສະມາຊິກບໍ່ສຳເລັດ.",
+    "Only the site owner can review memberships.":
+      "ສະເພາະເຈົ້າຂອງເວັບຈຶ່ງກວດສະມາຊິກໄດ້.",
+    "No active access": "ບໍ່ມີສິດໃຊ້ງານ",
+    Pending: "ລໍຖ້າ",
+    Cancelled: "ຍົກເລີກແລ້ວ",
+    "An active membership is required. Choose a plan to continue.":
+      "ຕ້ອງມີສະມາຊິກທີ່ໃຊ້ງານ. ເລືອກແພັກເກດເພື່ອສືບຕໍ່.",
+    "Create your free MEEJOB account — your first month is free.":
+      "ສ້າງບັນຊີ MEEJOB ຟຣີ — ເດືອນທຳອິດຟຣີ.",
+
     /* --- attributes ------------------------------------------------------- */
     "Main navigation": "ເມນູຫຼັກ",
     "Open menu": "ເປີດເມນູ",
@@ -704,6 +834,96 @@
     match = text.match(/^(\d+) applicants?$/);
     if (match) {
       return match[1] + " ຜູ້ສະໝັກ";
+    }
+
+    // "4 applicants" and membership dynamic text
+    match = text.match(/^Membership requests \((\d+)\)$/);
+    if (match) {
+      return "ຄຳຮ້ອງສະມາຊິກ (" + match[1] + ")";
+    }
+
+    match = text.match(/^Trial · (\d+)d$/);
+    if (match) {
+      return "ທົດລອງ · " + match[1] + " ວັນ";
+    }
+
+    match = text.match(/^(\d+) days? left$/);
+    if (match) {
+      return "ຍັງເຫຼືອ " + match[1] + " ວັນ";
+    }
+
+    match = text.match(/^Active until (.+) · (\d+) days? left$/);
+    if (match) {
+      return (
+        "ໃຊ້ງານຮອດ " + match[1] + " · ຍັງເຫຼືອ " + match[2] + " ວັນ"
+      );
+    }
+
+    match = text.match(/^Your free month ends on (.+)\.$/);
+    if (match) {
+      return "ເດືອນຟຣີຂອງທ່ານສິ້ນສຸດວັນທີ " + match[1] + ".";
+    }
+
+    var planNames = {
+      "1 month": "1 ເດືອນ",
+      "3 months": "3 ເດືອນ",
+      "1 year": "1 ປີ"
+    };
+
+    match = text.match(/^(.+) plan$/);
+    if (match && planNames[match[1]]) {
+      return "ແພັກເກດ " + planNames[match[1]];
+    }
+
+    match = text.match(/^(.+) · \$([\d.]+)$/);
+    if (match && planNames[match[1]]) {
+      return planNames[match[1]] + " · $" + match[2];
+    }
+
+    match = text.match(/^(.+) · \$([\d.]+) · paid in (USD|LAK|THB)$/);
+    if (match && planNames[match[1]]) {
+      return (
+        planNames[match[1]] +
+        " · $" +
+        match[2] +
+        " · ຈ່າຍເປັນ " +
+        match[3]
+      );
+    }
+
+    match = text.match(/^\(≈ \$([\d.]+) USD\)$/);
+    if (match) {
+      return "(≈ $" + match[1] + " ໂດລາ)";
+    }
+
+    match = text.match(/^Requested (.+)$/);
+    if (match) {
+      return "ຮ້ອງຂໍເມື່ອ " + match[1];
+    }
+
+    match = text.match(/^Paid until (.+)$/);
+    if (match) {
+      return "ຈ່າຍຮອດ " + match[1];
+    }
+
+    match = text.match(/^Trial until (.+)$/);
+    if (match) {
+      return "ທົດລອງຮອດ " + match[1];
+    }
+
+    match = text.match(/^Contact: (.+)$/);
+    if (match) {
+      return "ຕິດຕໍ່: " + match[1];
+    }
+
+    match = text.match(/^Admin note: (.+)$/);
+    if (match) {
+      return "ໝາຍເຫດຜູ້ດູແລ: " + match[1];
+    }
+
+    match = text.match(/^(\d+) payment requests? waiting for confirmation\.$/);
+    if (match) {
+      return "ມີ " + match[1] + " ຄຳຮ້ອງຈ່າຍເງິນລໍຖ້າຢືນຢັນ.";
     }
 
     return null;

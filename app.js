@@ -30,6 +30,48 @@ let currentUser = null;
     let myProjectsCache = [];
     let dashboardTab = "projects";
     /* =========================
+       MEMBERSHIP
+    ========================= */
+    const MEMBERSHIP_PLANS = {
+      monthly: { amount: 10, label: "1 month", period: "month" },
+      quarterly: { amount: 25, label: "3 months", period: "3 months" },
+      yearly: { amount: 60, label: "1 year", period: "year" }
+    };
+    const MEMBERSHIP_FACEBOOK_URL =
+      "https://www.facebook.com/profile.php?id=61595574394777";
+
+    // Payment QR images. Prices are quoted in USD; LAK and THB are
+    // approximate conversions rounded up so the transfer never falls short.
+    // Update the rates if the bank rate moves significantly.
+    const PAYMENT_CURRENCIES = {
+      usd: {
+        label: "USD",
+        code: "USD",
+        image: "payment-qr-usd.png",
+        rate: 1,
+        step: 1
+      },
+      lak: {
+        label: "LAK",
+        code: "LAK",
+        image: "payment-qr-lak.png",
+        rate: 21000,
+        step: 5000
+      },
+      thb: {
+        label: "THB",
+        code: "THB",
+        image: "payment-qr-thb.png",
+        rate: 36,
+        step: 10
+      }
+    };
+    let membershipInfo = null;
+    let membershipAvailable = false;
+    let selectedMembershipPlan = "monthly";
+    let selectedPaymentMethod = "qr";
+    let selectedQrCurrency = "usd";
+    /* =========================
        INITIALIZE
     ========================= */
     document.addEventListener(
@@ -247,6 +289,10 @@ let currentUser = null;
           currentUser
             ? `
               <button type="button" class="btn btn-secondary btn-sm"
+                onclick="toggleMobileMenu(false); openMembership();">
+                Membership
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm"
                 onclick="toggleMobileMenu(false); openDashboard();">
                 Dashboard
               </button>
@@ -274,6 +320,7 @@ let currentUser = null;
               </button>
             `;
       }
+      updateMembershipNav();
     }
     /* =========================
        AUTH MODAL
@@ -730,9 +777,136 @@ let currentUser = null;
           currentProfile.facebook = String(contacts.facebook || "").trim();
           currentProfile.portfolio = String(contacts.portfolio || "").trim();
         }
+        await loadMembershipInfo();
       } catch (error) {
         console.error(error);
       }
+    }
+
+    /* ==========================================================================
+       MEMBERSHIP STATE
+       The database is the source of truth. If membership.sql has not been run
+       yet, the site stays usable and the membership screen explains the setup
+       step instead of blocking every action.
+    ========================================================================== */
+
+    async function loadMembershipInfo() {
+      membershipInfo = null;
+      membershipAvailable = false;
+      if (!currentUser) {
+        return;
+      }
+      try {
+        const { data, error } = await supabaseClient.rpc("get_my_membership");
+        if (error) {
+          console.warn("Membership status unavailable:", error.message || error);
+          return;
+        }
+        const row = Array.isArray(data) ? data[0] : data;
+        membershipInfo = row || {
+          trial_ends_at: null,
+          membership_plan: null,
+          membership_started_at: null,
+          membership_expires_at: null,
+          is_active: false
+        };
+        membershipAvailable = true;
+      } catch (error) {
+        console.warn("Membership status unavailable:", error);
+      }
+    }
+
+    function membershipDaysLeft(value) {
+      if (!value) {
+        return 0;
+      }
+      const time = new Date(value).getTime();
+      if (Number.isNaN(time)) {
+        return 0;
+      }
+      return Math.max(0, Math.ceil((time - Date.now()) / 86400000));
+    }
+
+    function membershipSnapshot() {
+      if (!currentUser) {
+        return { state: "guest", active: false, days: 0, until: null };
+      }
+      if (currentIsAdmin) {
+        return { state: "admin", active: true, days: 0, until: null };
+      }
+      if (!membershipAvailable) {
+        return { state: "unknown", active: true, days: 0, until: null };
+      }
+
+      const now = Date.now();
+      const paidTime = membershipInfo && membershipInfo.membership_expires_at
+        ? new Date(membershipInfo.membership_expires_at).getTime()
+        : 0;
+      const trialTime = membershipInfo && membershipInfo.trial_ends_at
+        ? new Date(membershipInfo.trial_ends_at).getTime()
+        : 0;
+      const activeUntil = Math.max(
+        Number.isNaN(paidTime) ? 0 : paidTime,
+        Number.isNaN(trialTime) ? 0 : trialTime
+      );
+
+      if (activeUntil > now) {
+        const paidActive =
+          !Number.isNaN(paidTime) && paidTime > now && paidTime >= trialTime;
+        return {
+          state: paidActive ? "member" : "trial",
+          active: true,
+          plan: membershipInfo ? membershipInfo.membership_plan : null,
+          until: new Date(activeUntil).toISOString(),
+          days: membershipDaysLeft(new Date(activeUntil).toISOString())
+        };
+      }
+
+      return {
+        state: "expired",
+        active: false,
+        until:
+          (membershipInfo &&
+            (membershipInfo.membership_expires_at ||
+              membershipInfo.trial_ends_at)) ||
+          null,
+        days: 0
+      };
+    }
+
+    function hasActiveMembership() {
+      return membershipSnapshot().active;
+    }
+
+    function requireMembership() {
+      if (!currentUser) {
+        openAuth("login");
+        return false;
+      }
+      if (hasActiveMembership()) {
+        return true;
+      }
+      alert("An active membership is required. Choose a plan to continue.");
+      openMembership();
+      return false;
+    }
+
+    function membershipPlanLabel(plan) {
+      return MEMBERSHIP_PLANS[plan] ? MEMBERSHIP_PLANS[plan].label : "1 month";
+    }
+
+    function membershipStatusLabel(status) {
+      const value = String(status || "").toLowerCase();
+      if (value === "approved") {
+        return "Approved";
+      }
+      if (value === "rejected") {
+        return "Rejected";
+      }
+      if (value === "cancelled") {
+        return "Cancelled";
+      }
+      return "Pending";
     }
     const PENDING_SIGNUP_KEY = "meejob_pending_signup";
     function normalizeRole(role) {
@@ -844,6 +1018,7 @@ let currentUser = null;
       document.getElementById(
         "profileStatus"
       ).textContent = "";
+      renderMembershipStatus();
       document.getElementById(
         "profileModal"
       ).style.display = "flex";
@@ -2054,6 +2229,9 @@ let currentUser = null;
         );
         return;
       }
+      if (!requireMembership()) {
+        return;
+      }
       const project =
         allProjects.find(
           function (item) {
@@ -2216,6 +2394,9 @@ let currentUser = null;
         );
         return;
       }
+      if (!requireMembership()) {
+        return;
+      }
       document.getElementById(
         "projectTitle"
       ).value = "";
@@ -2261,6 +2442,9 @@ let currentUser = null;
         alert(
           "Only clients can post projects."
         );
+        return;
+      }
+      if (!requireMembership()) {
         return;
       }
       const title =
@@ -3334,6 +3518,9 @@ let currentUser = null;
         );
         return;
       }
+      if (!requireMembership()) {
+        return;
+      }
       const input =
         document.getElementById(
           "chatInput"
@@ -3707,6 +3894,612 @@ let currentUser = null;
     }
 
     /* ==========================================================================
+       MEMBERSHIP — pricing, payment requests and status
+    ========================================================================== */
+
+    function updateMembershipNav() {
+      const button = document.getElementById("membershipNavButton");
+      if (!button) {
+        return;
+      }
+      if (!currentUser) {
+        button.style.display = "none";
+        return;
+      }
+      button.style.display = "";
+      const snapshot = membershipSnapshot();
+      let label = "Membership";
+      if (snapshot.state === "trial") {
+        label = "Trial · " + snapshot.days + "d";
+      } else if (snapshot.state === "member") {
+        label = "Member";
+      } else if (snapshot.state === "expired") {
+        label = "Renew";
+      }
+      button.textContent = label;
+      button.classList.toggle(
+        "membership-nav-expired",
+        snapshot.state === "expired"
+      );
+    }
+
+    function membershipStatusMarkup(compact) {
+      if (!membershipAvailable) {
+        return `
+          <div class="membership-state is-warning">
+            <span class="membership-badge">Setup needed</span>
+            <strong>Membership system is not set up yet.</strong>
+            <p>Run supabase/membership.sql in the Supabase SQL editor to enable the free month and paid plans.</p>
+          </div>
+        `;
+      }
+
+      const snapshot = membershipSnapshot();
+
+      if (snapshot.state === "admin") {
+        return `
+          <div class="membership-state is-admin">
+            <span class="membership-badge">Administrator</span>
+            <strong>No membership required</strong>
+            <p>You can post, apply and message without a plan.</p>
+          </div>
+        `;
+      }
+
+      if (snapshot.state === "trial") {
+        return `
+          <div class="membership-state is-trial">
+            <span class="membership-badge">Free trial</span>
+            <strong>${snapshot.days} day${snapshot.days === 1 ? "" : "s"} left</strong>
+            <p>Your free month ends on ${escapeHTML(formatDate(snapshot.until))}.</p>
+            ${
+              compact
+                ? ""
+                : '<p class="membership-small">Choose a plan any time. Your paid days start after the free month.</p>'
+            }
+          </div>
+        `;
+      }
+
+      if (snapshot.state === "member") {
+        return `
+          <div class="membership-state is-active">
+            <span class="membership-badge">Active member</span>
+            <strong>${escapeHTML(membershipPlanLabel(snapshot.plan))} plan</strong>
+            <p>Active until ${escapeHTML(formatDate(snapshot.until))} · ${snapshot.days} day${snapshot.days === 1 ? "" : "s"} left</p>
+            ${
+              compact
+                ? ""
+                : '<p class="membership-small">You can renew before this date — the new days are added after the current expiry.</p>'
+            }
+          </div>
+        `;
+      }
+
+      return `
+        <div class="membership-state is-expired">
+          <span class="membership-badge">Membership expired</span>
+          <strong>Your free month has ended.</strong>
+          <p>Choose a plan to keep posting, applying and messaging.</p>
+        </div>
+      `;
+    }
+
+    function renderMembershipStatus() {
+      const box = document.getElementById("membershipStatusCard");
+      if (box) {
+        box.innerHTML = membershipStatusMarkup(false);
+      }
+      const profileBox = document.getElementById("profileMembershipBox");
+      if (profileBox) {
+        profileBox.innerHTML = membershipStatusMarkup(true);
+      }
+      updateMembershipNav();
+    }
+
+    async function openMembership(plan) {
+      if (!currentUser) {
+        openAuth("login");
+        return;
+      }
+      if (plan && MEMBERSHIP_PLANS[plan]) {
+        selectedMembershipPlan = plan;
+      }
+      await loadMembershipInfo();
+      renderMembershipStatus();
+      selectPaymentMethod(selectedPaymentMethod);
+      selectQrCurrency(selectedQrCurrency);
+      selectMembershipPlan(selectedMembershipPlan);
+      setMembershipStatus("", "");
+      const contactInput = document.getElementById("membershipContact");
+      if (contactInput && !contactInput.value) {
+        contactInput.value =
+          (currentProfile && (currentProfile.phone || currentProfile.facebook)) ||
+          "";
+      }
+      openModal("membershipModal");
+      await renderMembershipHistory();
+    }
+
+    function selectMembershipPlan(plan) {
+      if (!MEMBERSHIP_PLANS[plan]) {
+        return;
+      }
+      selectedMembershipPlan = plan;
+      document.querySelectorAll("[data-membership-plan]").forEach(function (card) {
+        card.classList.toggle(
+          "selected",
+          card.getAttribute("data-membership-plan") === plan
+        );
+      });
+      setText("membershipFormPlan", membershipPlanLabel(plan));
+      updateMembershipAmounts();
+    }
+
+    function paymentAmountFor(plan, currency) {
+      const planInfo = MEMBERSHIP_PLANS[plan] || MEMBERSHIP_PLANS.monthly;
+      const config = PAYMENT_CURRENCIES[currency] || PAYMENT_CURRENCIES.usd;
+      if (currency === "usd") {
+        return planInfo.amount;
+      }
+      const converted = planInfo.amount * config.rate;
+      return Math.ceil(converted / config.step) * config.step;
+    }
+
+    function formatPaymentAmount(amount, currency) {
+      if (currency === "usd") {
+        return "$" + amount;
+      }
+      return (
+        Number(amount).toLocaleString("en-US") +
+        " " +
+        (PAYMENT_CURRENCIES[currency] ? PAYMENT_CURRENCIES[currency].label : "")
+      ).trim();
+    }
+
+    function updateMembershipAmounts() {
+      const usd = MEMBERSHIP_PLANS[selectedMembershipPlan].amount;
+      const currency = selectedQrCurrency;
+      const amount = paymentAmountFor(selectedMembershipPlan, currency);
+
+      setText("membershipFormAmount", "$" + usd);
+      setText("membershipPayAmount", formatPaymentAmount(amount, currency));
+
+      const alt = document.getElementById("membershipPayAmountAlt");
+      if (alt) {
+        alt.textContent =
+          currency === "usd" ? "" : "(≈ $" + usd + " USD)";
+      }
+
+      const rateNote = document.getElementById("membershipQrRateNote");
+      if (rateNote) {
+        rateNote.hidden = currency === "usd";
+      }
+    }
+
+    function selectQrCurrency(currency) {
+      if (!PAYMENT_CURRENCIES[currency]) {
+        return;
+      }
+      selectedQrCurrency = currency;
+
+      document.querySelectorAll("[data-qr-currency]").forEach(function (button) {
+        button.classList.toggle(
+          "active",
+          button.getAttribute("data-qr-currency") === currency
+        );
+      });
+
+      const config = PAYMENT_CURRENCIES[currency];
+      const image = document.getElementById("membershipQrImage");
+      const fallback = document.getElementById("membershipQrFallback");
+      if (image) {
+        image.style.display = "";
+        image.src = config.image;
+        image.alt = "MEEJOB payment QR code — " + config.label;
+      }
+      if (fallback) {
+        fallback.hidden = true;
+      }
+
+      const bankCurrency = document.getElementById("membershipQrBankCurrency");
+      if (bankCurrency) {
+        bankCurrency.textContent = config.label;
+      }
+
+      updateMembershipAmounts();
+    }
+
+    function handleQrError() {
+      const image = document.getElementById("membershipQrImage");
+      const fallback = document.getElementById("membershipQrFallback");
+      if (image) {
+        image.style.display = "none";
+      }
+      if (fallback) {
+        fallback.hidden = false;
+      }
+    }
+
+    function selectPaymentMethod(method) {
+      if (method !== "qr" && method !== "facebook") {
+        return;
+      }
+      selectedPaymentMethod = method;
+      document.querySelectorAll("[data-payment-method]").forEach(function (button) {
+        button.classList.toggle(
+          "active",
+          button.getAttribute("data-payment-method") === method
+        );
+      });
+      const qrPanel = document.getElementById("membershipQrPanel");
+      const fbPanel = document.getElementById("membershipFacebookPanel");
+      if (qrPanel) {
+        qrPanel.hidden = method !== "qr";
+      }
+      if (fbPanel) {
+        fbPanel.hidden = method !== "facebook";
+      }
+    }
+
+    function setMembershipStatus(message, color) {
+      const status = document.getElementById("membershipFormStatus");
+      if (!status) {
+        return;
+      }
+      status.textContent = message || "";
+      status.style.color = color || "";
+    }
+
+    async function renderMembershipHistory(containerId) {
+      const container = document.getElementById(
+        containerId || "membershipHistory"
+      );
+      if (!container) {
+        return;
+      }
+      if (!currentUser) {
+        container.innerHTML = "";
+        return;
+      }
+      if (!membershipAvailable) {
+        container.innerHTML =
+          '<div class="empty-message">Membership requests need supabase/membership.sql to be enabled.</div>';
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("membership_requests")
+        .select(
+          "id, plan, amount_usd, currency, method, status, admin_note, created_at, reviewed_at"
+        )
+        .eq("profile_id", currentUser.id)
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      if (error) {
+        container.innerHTML =
+          '<div class="empty-message">Could not load your membership requests.</div>';
+        return;
+      }
+
+      const requests = data || [];
+      if (!requests.length) {
+        container.innerHTML =
+          '<div class="empty-message">No membership requests yet.</div>';
+        return;
+      }
+
+      container.innerHTML = "";
+      const list = document.createElement("div");
+      list.className = "membership-history";
+
+      requests.forEach(function (request) {
+        const item = document.createElement("div");
+        item.className = "membership-request";
+        const status = String(request.status || "pending").toLowerCase();
+        const method =
+          request.method === "facebook" ? "Facebook page" : "QR transfer";
+        const currency = String(request.currency || "USD").toUpperCase();
+        const paidIn = currency === "USD" ? "" : " · paid in " + currency;
+        item.innerHTML = `
+          <div class="membership-request-main">
+            <strong>${escapeHTML(membershipPlanLabel(request.plan))} · $${escapeHTML(request.amount_usd)}${escapeHTML(paidIn)}</strong>
+            <span class="membership-request-meta">${escapeHTML(method)} · ${escapeHTML(formatDate(request.created_at))}</span>
+            ${
+              request.admin_note
+                ? `<p class="membership-request-note">${escapeHTML(request.admin_note)}</p>`
+                : ""
+            }
+          </div>
+          <div class="membership-request-side">
+            <span class="membership-status status-${escapeHTML(status)}">${escapeHTML(membershipStatusLabel(status))}</span>
+            ${
+              status === "pending"
+                ? `<button type="button" class="btn btn-secondary btn-sm"
+                     onclick="cancelMembershipRequest('${escapeJS(request.id)}')">Cancel</button>`
+                : ""
+            }
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      container.appendChild(list);
+    }
+
+    async function submitMembershipRequest() {
+      if (!currentUser) {
+        openAuth("login");
+        return;
+      }
+      if (!membershipAvailable) {
+        setMembershipStatus(
+          "Membership requests need supabase/membership.sql to be enabled.",
+          "#b45309"
+        );
+        return;
+      }
+
+      const contact = document
+        .getElementById("membershipContact")
+        .value.trim();
+      const note = document
+        .getElementById("membershipReference")
+        .value.trim();
+      const button = document.getElementById("membershipSubmitButton");
+
+      if (!contact) {
+        setMembershipStatus(
+          "Please add a phone number or Facebook name so we can confirm your payment.",
+          "#dc2626"
+        );
+        return;
+      }
+
+      setMembershipStatus("Sending request...", "#2563eb");
+      if (button) {
+        button.disabled = true;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from("membership_requests")
+          .insert({
+            profile_id: currentUser.id,
+            plan: selectedMembershipPlan,
+            method: selectedPaymentMethod,
+            currency: PAYMENT_CURRENCIES[selectedQrCurrency].code,
+            contact: contact,
+            note: note
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        setMembershipStatus(
+          "Request sent. We will confirm your payment and activate your plan.",
+          "#16a34a"
+        );
+        const reference = document.getElementById("membershipReference");
+        if (reference) {
+          reference.value = "";
+        }
+        await loadMembershipInfo();
+        renderMembershipStatus();
+        await renderMembershipHistory();
+      } catch (error) {
+        console.error("Membership request error:", error);
+        setMembershipStatus(
+          isSchemaMissing(error)
+            ? "Membership requests need supabase/membership.sql to be enabled."
+            : error.message || "Could not send the membership request.",
+          "#dc2626"
+        );
+      } finally {
+        if (button) {
+          button.disabled = false;
+        }
+      }
+    }
+
+    async function cancelMembershipRequest(requestId) {
+      if (!requestId || !confirm("Cancel this membership request?")) {
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.rpc(
+          "cancel_membership_request",
+          { request_id: requestId }
+        );
+        if (error) {
+          throw error;
+        }
+        setMembershipStatus("Request cancelled.", "#16a34a");
+        await renderMembershipHistory();
+        await renderMembershipHistory("dashboardMembershipHistory");
+      } catch (error) {
+        console.error("Cancel membership request error:", error);
+        setMembershipStatus(
+          error.message || "Could not cancel the membership request.",
+          "#dc2626"
+        );
+      }
+    }
+
+    async function reviewMembershipRequest(requestId, decision) {
+      if (!currentIsAdmin) {
+        return;
+      }
+      const question =
+        decision === "approved"
+          ? "Approve this membership payment?"
+          : "Reject this membership request?";
+      if (!confirm(question)) {
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.rpc(
+          "review_membership_request",
+          {
+            request_id: requestId,
+            decision: decision,
+            review_note: ""
+          }
+        );
+        if (error) {
+          throw error;
+        }
+        alert(
+          decision === "approved"
+            ? "Membership activated."
+            : "Membership request rejected."
+        );
+        await updateMembershipRequestsBadge();
+        await refreshDashboard();
+      } catch (error) {
+        console.error("Review membership request error:", error);
+        alert(error.message || "Could not review the membership request.");
+      }
+    }
+
+    async function updateMembershipRequestsBadge() {
+      const tab = document.getElementById("dashboardMembershipsTab");
+      if (!tab || !currentIsAdmin) {
+        return;
+      }
+      try {
+        const { data, error } = await supabaseClient.rpc(
+          "admin_list_membership_requests"
+        );
+        if (error) {
+          return;
+        }
+        const pending = (data || []).filter(function (request) {
+          return request.status === "pending";
+        }).length;
+        tab.textContent = pending
+          ? "Membership requests (" + pending + ")"
+          : "Membership requests";
+      } catch (error) {
+        /* the tab keeps its plain label */
+      }
+    }
+
+    async function renderDashboardMembership(content) {
+      content.innerHTML = `
+        <div class="membership-dashboard-head">
+          <div id="dashboardMembershipStatus">${membershipStatusMarkup(false)}</div>
+          <button type="button" class="btn btn-primary" onclick="openMembership()">
+            Choose a plan
+          </button>
+        </div>
+        <h3 class="membership-history-title">Request history</h3>
+        <div id="dashboardMembershipHistory" aria-live="polite">
+          <div class="empty-message">Loading...</div>
+        </div>
+      `;
+      await renderMembershipHistory("dashboardMembershipHistory");
+    }
+
+    async function renderDashboardMemberships(content) {
+      if (!currentIsAdmin) {
+        content.innerHTML =
+          '<div class="empty-message">Only the site owner can review memberships.</div>';
+        return;
+      }
+
+      const { data, error } = await supabaseClient.rpc(
+        "admin_list_membership_requests"
+      );
+      if (error) {
+        throw error;
+      }
+
+      const requests = data || [];
+      const pending = requests.filter(function (request) {
+        return request.status === "pending";
+      });
+      await updateMembershipRequestsBadge();
+
+      if (!requests.length) {
+        content.innerHTML =
+          '<div class="empty-message">No membership requests yet.</div>';
+        return;
+      }
+
+      const list = document.createElement("div");
+      list.className = "membership-admin-list";
+
+      requests.forEach(function (request) {
+        const item = document.createElement("div");
+        item.className = "membership-request membership-admin-request";
+        const status = String(request.status || "pending").toLowerCase();
+        const method =
+          request.method === "facebook" ? "Facebook page" : "QR transfer";
+        const currency = String(request.currency || "USD").toUpperCase();
+        const currentAccess = request.membership_expires_at
+          ? "Paid until " + formatDate(request.membership_expires_at)
+          : request.trial_ends_at
+            ? "Trial until " + formatDate(request.trial_ends_at)
+            : "No active access";
+
+        item.innerHTML = `
+          <div class="membership-request-main">
+            <strong>${escapeHTML(request.profile_name || "Member")}</strong>
+            <span class="membership-request-meta">${escapeHTML(request.email || "")}</span>
+            <span class="membership-request-meta">
+              ${escapeHTML(membershipPlanLabel(request.plan))} · $${escapeHTML(request.amount_usd)} · ${escapeHTML(method)} · ${escapeHTML(currency)}
+            </span>
+            <span class="membership-request-meta">${escapeHTML(currentAccess)}</span>
+            ${
+              request.contact
+                ? `<span class="membership-request-meta">Contact: ${escapeHTML(request.contact)}</span>`
+                : ""
+            }
+            ${
+              request.note
+                ? `<p class="membership-request-note">${escapeHTML(request.note)}</p>`
+                : ""
+            }
+            <span class="membership-request-meta">Requested ${escapeHTML(formatDate(request.created_at))}</span>
+            ${
+              request.admin_note
+                ? `<p class="membership-request-note">Admin note: ${escapeHTML(request.admin_note)}</p>`
+                : ""
+            }
+          </div>
+          <div class="membership-request-side">
+            <span class="membership-status status-${escapeHTML(status)}">${escapeHTML(membershipStatusLabel(status))}</span>
+            ${
+              status === "pending"
+                ? `<button type="button" class="btn btn-primary btn-sm"
+                     onclick="reviewMembershipRequest('${escapeJS(request.id)}', 'approved')">Approve</button>
+                   <button type="button" class="btn btn-danger btn-sm"
+                     onclick="reviewMembershipRequest('${escapeJS(request.id)}', 'rejected')">Reject</button>`
+                : ""
+            }
+          </div>
+        `;
+        list.appendChild(item);
+      });
+
+      content.innerHTML = "";
+      if (pending.length) {
+        const note = document.createElement("p");
+        note.className = "membership-admin-note";
+        note.textContent =
+          pending.length +
+          " payment request" +
+          (pending.length === 1 ? "" : "s") +
+          " waiting for confirmation.";
+        content.appendChild(note);
+      }
+      content.appendChild(list);
+    }
+
+    /* ==========================================================================
        DASHBOARD — posted projects and my applications
     ========================================================================== */
 
@@ -3739,6 +4532,8 @@ let currentUser = null;
       const applicationsTab = document.querySelector('[data-dashboard-tab="applications"]');
       const jobsTab = document.querySelector('[data-dashboard-tab="jobs"]');
       const approvalsTab = document.querySelector('[data-dashboard-tab="approvals"]');
+      const membershipTab = document.querySelector('[data-dashboard-tab="membership"]');
+      const membershipsTab = document.querySelector('[data-dashboard-tab="memberships"]');
       if (projectsTab) {
         projectsTab.style.display = isFreelancer ? "none" : "";
       }
@@ -3750,6 +4545,15 @@ let currentUser = null;
       }
       if (approvalsTab) {
         approvalsTab.style.display = currentIsAdmin ? "" : "none";
+      }
+      if (membershipTab) {
+        membershipTab.style.display = "";
+      }
+      if (membershipsTab) {
+        membershipsTab.style.display = currentIsAdmin ? "" : "none";
+      }
+      if (currentIsAdmin) {
+        await updateMembershipRequestsBadge();
       }
       openModal("dashboardModal");
       updateDashboardTabs();
@@ -3770,7 +4574,9 @@ let currentUser = null;
         tab !== "projects" &&
         tab !== "applications" &&
         tab !== "jobs" &&
-        tab !== "approvals"
+        tab !== "approvals" &&
+        tab !== "membership" &&
+        tab !== "memberships"
       ) {
         return;
       }
@@ -3788,6 +4594,12 @@ let currentUser = null;
         return;
       }
       if (tab === "approvals" && !currentIsAdmin) {
+        return;
+      }
+      if (tab === "memberships" && !currentIsAdmin) {
+        return;
+      }
+      if (tab === "membership" && !currentUser) {
         return;
       }
       dashboardTab = tab;
@@ -3808,6 +4620,12 @@ let currentUser = null;
           await renderDashboardJobs(content);
         } else if (dashboardTab === "approvals") {
           await renderDashboardApprovals(content);
+        } else if (dashboardTab === "membership") {
+          await loadMembershipInfo();
+          renderMembershipStatus();
+          await renderDashboardMembership(content);
+        } else if (dashboardTab === "memberships") {
+          await renderDashboardMemberships(content);
         } else {
           await renderDashboardProjects(content);
         }
@@ -5109,6 +5927,9 @@ let currentUser = null;
         alert("Only clients can post jobs.");
         return;
       }
+      if (!requireMembership()) {
+        return;
+      }
 
       let job = null;
       if (jobId) {
@@ -5163,6 +5984,9 @@ let currentUser = null;
         (!currentProfile || currentProfile.role !== "client")
       ) {
         alert("Only clients can post jobs.");
+        return;
+      }
+      if (!requireMembership()) {
         return;
       }
       const title = document.getElementById("jobTitle").value.trim();
@@ -5522,6 +6346,9 @@ let currentUser = null;
     }
 
     async function openPosterStudio(jobId) {
+      if (!requireMembership()) {
+        return;
+      }
       let job =
         myJobsCache.find(function (item) {
           return String(item.id) === String(jobId);

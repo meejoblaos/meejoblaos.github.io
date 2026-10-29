@@ -95,6 +95,16 @@
 
         <button
           type="button"
+          id="membershipNavButton"
+          class="btn btn-secondary"
+          style="display:none;"
+          onclick="openMembership()"
+        >
+          Membership
+        </button>
+
+        <button
+          type="button"
           id="dashboardButton"
           class="btn btn-secondary"
           onclick="openDashboard()"
@@ -147,6 +157,7 @@
     <a href="#projects" onclick="toggleMobileMenu()">Freelance Projects</a>
     <a href="#talent" onclick="toggleMobileMenu()">Talent</a>
     <a href="#how-it-works" onclick="toggleMobileMenu()">How It Works</a>
+    <a href="#pricing" onclick="toggleMobileMenu()">Membership</a>
     <a href="#about" onclick="toggleMobileMenu()">About</a>
     <a href="#top" onclick="toggleMobileMenu()">Back to top</a>
     <button
@@ -216,6 +227,11 @@
         >
           Browse freelance projects
         </button>
+      </div>
+
+      <div class="hero-membership-pill">
+        <span class="hero-membership-dot" aria-hidden="true"></span>
+        First month free · No service fees · No commission
       </div>
 
       <div class="hero-stats">
@@ -444,6 +460,79 @@
       </div>
     </section>
 
+    <!-- MEMBERSHIP / PRICING -->
+    <section id="pricing" class="pricing-section">
+      <div class="section-title">
+        <h2>Simple Membership</h2>
+        <p>Your first month is free. Then choose the plan that fits you.</p>
+      </div>
+
+      <div class="pricing-highlight">
+        <span class="pricing-badge">First month free</span>
+        <h3>Try MEEJOB free for 30 days</h3>
+        <p>
+          New members get their first month free. After that, choose a plan.
+          No service fees, no commission — ever.
+        </p>
+      </div>
+
+      <div class="pricing-grid">
+        <article class="price-card" data-membership-plan-card="monthly">
+          <h3>1 month</h3>
+          <div class="price-amount"><span class="price-currency">$</span>10<small>/ month</small></div>
+          <p class="price-note">Flexible monthly plan.</p>
+          <ul class="price-features">
+            <li>Post jobs and projects</li>
+            <li>Apply to freelance work</li>
+            <li>Message clients and freelancers</li>
+            <li>Unlimited poster studio</li>
+            <li>No service fees or commission</li>
+          </ul>
+          <button type="button" class="btn btn-secondary price-button" onclick="openMembership('monthly')">
+            Choose 1 month
+          </button>
+        </article>
+
+        <article class="price-card featured" data-membership-plan-card="quarterly">
+          <span class="price-ribbon">Most popular</span>
+          <h3>3 months</h3>
+          <div class="price-amount"><span class="price-currency">$</span>25<small>/ 3 months</small></div>
+          <p class="price-note">Save $5 compared with monthly.</p>
+          <ul class="price-features">
+            <li>Everything in the monthly plan</li>
+            <li>3 months of access</li>
+            <li>Priority support on Facebook</li>
+            <li>Keep 100% of what you earn</li>
+            <li>No service fees or commission</li>
+          </ul>
+          <button type="button" class="btn btn-primary price-button" onclick="openMembership('quarterly')">
+            Choose 3 months
+          </button>
+        </article>
+
+        <article class="price-card" data-membership-plan-card="yearly">
+          <h3>1 year</h3>
+          <div class="price-amount"><span class="price-currency">$</span>60<small>/ year</small></div>
+          <p class="price-note">Save $60 compared with monthly.</p>
+          <ul class="price-features">
+            <li>Everything in the 3-month plan</li>
+            <li>12 months of access</li>
+            <li>Best value for active members</li>
+            <li>Keep 100% of what you earn</li>
+            <li>No service fees or commission</li>
+          </ul>
+          <button type="button" class="btn btn-secondary price-button" onclick="openMembership('yearly')">
+            Choose 1 year
+          </button>
+        </article>
+      </div>
+
+      <p class="pricing-footnote">
+        Pay by QR transfer or contact the MEEJOB Facebook page. Your plan starts
+        after your free month, so no paid days are lost.
+      </p>
+    </section>
+
     <!-- ABOUT -->
     <section id="about">
       <div class="section-title">
@@ -462,7 +551,7 @@
     <section class="cta">
       <div class="cta-inner">
         <h2>Find Work. Build Your Future.</h2>
-        <p>Create your free MEEJOB account and start today.</p>
+        <p>Create your free MEEJOB account — your first month is free.</p>
         <button
           type="button"
           class="btn"
@@ -492,6 +581,7 @@
         <a href="#categories">Job categories</a>
         <a href="#projects">Freelance projects</a>
         <a href="#talent">Talent profiles</a>
+        <a href="#pricing">Membership</a>
         <a href="#how-it-works">How it works</a>
       </div>
       <div class="footer-col">
@@ -712,6 +802,15 @@
       </button>
 
       <h2 id="profileTitle">Your Profile</h2>
+
+      <div id="profileMembershipBox" class="profile-membership"></div>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm profile-membership-button"
+        onclick="openMembership()"
+      >
+        Manage membership
+      </button>
 
       <div class="form-group">
         <label for="profileName">Name</label>
@@ -1166,6 +1265,12 @@
           <button type="button" class="tab" id="dashboardApprovalsTab" data-dashboard-tab="approvals" style="display:none;" onclick="switchDashboardTab('approvals')">
             Job approvals
           </button>
+          <button type="button" class="tab" data-dashboard-tab="membership" onclick="switchDashboardTab('membership')">
+            Membership
+          </button>
+          <button type="button" class="tab" id="dashboardMembershipsTab" data-dashboard-tab="memberships" style="display:none;" onclick="switchDashboardTab('memberships')">
+            Membership requests
+          </button>
         </div>
         <button
           type="button"
@@ -1180,6 +1285,219 @@
       <div id="dashboardContent" aria-live="polite">
         <div class="empty-message">Loading...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MEMBERSHIP MODAL
+  ======================================================================= -->
+  <div id="membershipModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="membershipTitle">
+    <div class="modal-content large membership-modal-content">
+      <button
+        type="button"
+        class="close-btn"
+        aria-label="Close"
+        onclick="closeModal('membershipModal')"
+      >
+        ×
+      </button>
+
+      <h2 id="membershipTitle">Membership</h2>
+      <p class="membership-intro">
+        First month free for new members. No service fees and no commission.
+      </p>
+
+      <div id="membershipStatusCard" class="membership-status-card"></div>
+
+      <h3 class="membership-section-title">Choose your plan</h3>
+      <div class="membership-plan-picker">
+        <button
+          type="button"
+          class="membership-plan-option"
+          data-membership-plan="monthly"
+          onclick="selectMembershipPlan('monthly')"
+        >
+          <span class="membership-plan-name">1 month</span>
+          <span class="membership-plan-price">$10</span>
+        </button>
+        <button
+          type="button"
+          class="membership-plan-option"
+          data-membership-plan="quarterly"
+          onclick="selectMembershipPlan('quarterly')"
+        >
+          <span class="membership-plan-name">3 months</span>
+          <span class="membership-plan-price">$25</span>
+        </button>
+        <button
+          type="button"
+          class="membership-plan-option"
+          data-membership-plan="yearly"
+          onclick="selectMembershipPlan('yearly')"
+        >
+          <span class="membership-plan-name">1 year</span>
+          <span class="membership-plan-price">$60</span>
+        </button>
+      </div>
+
+      <div class="membership-pay-summary">
+        <span>Selected plan: <strong id="membershipFormPlan">1 month</strong></span>
+        <span>Amount: <strong id="membershipFormAmount">$10</strong></span>
+      </div>
+
+      <h3 class="membership-section-title">Payment method</h3>
+      <div class="payment-tabs">
+        <button
+          type="button"
+          class="payment-tab active"
+          data-payment-method="qr"
+          onclick="selectPaymentMethod('qr')"
+        >
+          QR transfer
+        </button>
+        <button
+          type="button"
+          class="payment-tab"
+          data-payment-method="facebook"
+          onclick="selectPaymentMethod('facebook')"
+        >
+          Facebook page
+        </button>
+      </div>
+
+      <div id="membershipQrPanel" class="payment-panel">
+        <p class="qr-choose">Choose the currency you want to pay in.</p>
+
+        <div class="qr-currency-tabs" role="group" aria-label="Payment currency">
+          <button
+            type="button"
+            class="qr-currency active"
+            data-qr-currency="usd"
+            onclick="selectQrCurrency('usd')"
+          >
+            $ USD
+          </button>
+          <button
+            type="button"
+            class="qr-currency"
+            data-qr-currency="lak"
+            onclick="selectQrCurrency('lak')"
+          >
+            ₭ LAK
+          </button>
+          <button
+            type="button"
+            class="qr-currency"
+            data-qr-currency="thb"
+            onclick="selectQrCurrency('thb')"
+          >
+            ฿ THB
+          </button>
+        </div>
+
+        <div class="qr-box">
+          <img
+            id="membershipQrImage"
+            src="payment-qr-usd.png"
+            alt="MEEJOB payment QR code — USD"
+            onerror="handleQrError();"
+          >
+          <p class="qr-bank">
+            <span>QR from BCEL bank · LAPNet</span>
+            · <strong id="membershipQrBankCurrency">USD</strong>
+          </p>
+          <p id="membershipQrFallback" class="qr-help" hidden>
+            This QR image is not available yet. Message our Facebook page and we
+            will send it to you.
+          </p>
+        </div>
+
+        <p class="qr-amount">
+          Scan the QR code and transfer
+          <strong id="membershipPayAmount">$10</strong>
+          <span id="membershipPayAmountAlt" class="qr-amount-alt"></span>
+        </p>
+        <p class="membership-small" id="membershipQrRateNote" hidden>
+          LAK and THB amounts are rounded up at an approximate rate. The MEEJOB
+          team confirms the exact amount with you.
+        </p>
+        <p class="membership-small">
+          After transferring, add your reference below and send the request.
+          Sending the receipt on Facebook helps us confirm faster.
+        </p>
+        <a
+          class="btn btn-secondary btn-sm"
+          href="https://www.facebook.com/profile.php?id=61595574394777"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Message MEEJOB on Facebook
+        </a>
+      </div>
+
+      <div id="membershipFacebookPanel" class="payment-panel" hidden>
+        <p>
+          Message the MEEJOB Facebook page to ask for the QR code or payment
+          details.
+        </p>
+        <a
+          class="btn btn-primary"
+          href="https://www.facebook.com/profile.php?id=61595574394777"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Message MEEJOB on Facebook
+        </a>
+        <p class="membership-small">
+          Tell us which plan you want and we will reply with the QR code and
+          confirmation.
+        </p>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="membershipContact">Contact (phone or Facebook)</label>
+          <input
+            type="text"
+            id="membershipContact"
+            placeholder="e.g. 020 5555 1234 or Facebook name"
+            maxlength="120"
+            autocomplete="tel"
+          >
+        </div>
+        <div class="form-group">
+          <label for="membershipReference">Payment reference / sender name</label>
+          <input
+            type="text"
+            id="membershipReference"
+            placeholder="e.g. transfer reference or your name"
+            maxlength="160"
+          >
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="membershipSubmitButton"
+          onclick="submitMembershipRequest()"
+        >
+          I have paid — send request
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('membershipModal')"
+        >
+          Close
+        </button>
+      </div>
+
+      <div id="membershipFormStatus" class="status-message" role="status" aria-live="polite"></div>
+
+      <h3 class="membership-history-title">Request history</h3>
+      <div id="membershipHistory" aria-live="polite"></div>
     </div>
   </div>
 
