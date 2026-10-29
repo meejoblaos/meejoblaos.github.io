@@ -7048,6 +7048,21 @@ let currentUser = null;
       window.setTimeout(showPreviewGate, 900);
     }
 
+    // A restored session can finish loading just after the preview gate was
+    // scheduled. Close the gate as soon as we know the visitor is signed in,
+    // so it never stacks on top of the profile, dashboard or membership modal.
+    if (
+      window.supabaseClient &&
+      supabaseClient.auth &&
+      typeof supabaseClient.auth.onAuthStateChange === "function"
+    ) {
+      supabaseClient.auth.onAuthStateChange(function (_event, session) {
+        if (session && session.user) {
+          closeModal("previewModal");
+        }
+      });
+    }
+
     /* ==========================================================================
        STARTUP EXTRAS
     ========================================================================== */
